@@ -29,6 +29,12 @@ class Vote(models.Model):
     method = models.CharField
 
 
+class Candidate(models.Model):
+    vote = models.ForeignKey(Vote, on_delete=models.CASCADE)
+    name = models.CharField
+    link = models.URLField
+
+
 class BallotEntry(models.Model):
     token = models.ForeignKey(Token, on_delete=models.DO_NOTHING)
     vote = models.ForeignKey(Vote, on_delete=models.CASCADE)
