@@ -13,29 +13,36 @@ class TokenSet(models.Model):
 
 class Device(models.Model):
     expires = models.DateTimeField
-    fingerprint = models.CharField
+    fingerprint = models.IntegerField
 
 
-class Token(models.Model):
+class AuthToken(models.Model):
     token_set = models.ForeignKey(TokenSet, on_delete=models.CASCADE)
     device = models.ForeignKey(Device, on_delete=models.DO_NOTHING)
     creator = models.CharField
     proxy = models.BooleanField(default=False)
 
 
+class VoterToken(models.Model):
+    auth_token = models.ForeignKey(AuthToken, on_delete=models.CASCADE)
+    proxy = models.BooleanField(default=False)
+
+
 class Vote(models.Model):
     token_set = models.ForeignKey(TokenSet, on_delete=models.CASCADE)
     name = models.CharField
+    description = models.TextField
     method = models.CharField
+    live = models.BooleanField(default=False)
 
 
-class Candidate(models.Model):
+class Option(models.Model):
     vote = models.ForeignKey(Vote, on_delete=models.CASCADE)
     name = models.CharField
     link = models.URLField
 
 
 class BallotEntry(models.Model):
-    token = models.ForeignKey(Token, on_delete=models.DO_NOTHING)
-    vote = models.ForeignKey(Vote, on_delete=models.CASCADE)
-    data = JSONField()
+    token = models.ForeignKey(VoterToken, on_delete=models.DO_NOTHING)
+    candidate = models.ForeignKey(Option, on_delete=models.CASCADE)
+    value = models.SmallIntegerField
