@@ -6,11 +6,18 @@ import uuid
 class Meeting(models.Model):
     time = models.DateTimeField
     name = models.CharField
+    close_time = models.DateTimeField(null=True)
+
+    def open(self):
+        return self.close_time is None
 
 
 class TokenSet(models.Model):
     meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def valid(self):
+        return self == self.meeting.tokenset_set.latest('created_at') and self.meeting.open()
 
 
 class Device(models.Model):
@@ -29,8 +36,11 @@ class AuthToken(models.Model):
     token_set = models.ForeignKey(TokenSet, on_delete=models.CASCADE)
     device = models.ForeignKey(Device, on_delete=models.DO_NOTHING, null=True)
     creator = models.CharField
-    proxy = models.BooleanField(default=False)
+    has_proxy = models.BooleanField(default=False)
     id = models.PositiveIntegerField(primary_key=True, default=get_new_token_id)
+
+    def valid_for(self, vote):
+        return vote.token_set == self.token_set
 
     def save(self, *args, **kwargs):
         if self._state.adding:
