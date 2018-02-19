@@ -10,6 +10,7 @@ class Meeting(models.Model):
 
 class TokenSet(models.Model):
     meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class Device(models.Model):
