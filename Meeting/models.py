@@ -1,6 +1,5 @@
 from django.db import models
 import random
-import uuid
 
 
 class Meeting(models.Model):
