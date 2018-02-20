@@ -159,7 +159,7 @@ class LoaderPlugin(object):
     
   def normalizeFileName(self, fName):
     if fName == "": 
-      raise RuntimeError, "No file name given for saving ballots."
+      raise RuntimeError("No file name given for saving ballots.")
     ext = os.path.splitext(fName)[1]
     if ('' == ext):
       fName += "." + self.extensions[0]

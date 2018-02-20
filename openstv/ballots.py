@@ -163,7 +163,7 @@ class Ballots(object):
       if isinstance(ranking, list):
         self.checkBallot(ranking)
       elif ranking > nc - 1:
-        raise RuntimeError, "Ballot has invalid data: %s" % str(ballot)
+        raise RuntimeError("Ballot has invalid data: %s" % str(ballot))
   
   def appendBallot(self, ballot, ballotID=None):
     "Append a ballot to this Ballots object."
@@ -401,10 +401,10 @@ class Ballots(object):
     if (ballotList.numSeats != self.numSeats or
         ballotList.names != self.names or
         ballotList.withdrawn != self.withdrawn):
-      raise RuntimeError, \
+      raise RuntimeError(
             "Can't append ballots.  The numbers of seats and candidates, \n"\
             "the names of the candidates, and the withdrawn candidates \n"\
-            "must be identical."
+            "must be identical.")
 
     for i in xrange(ballotList.numBallots):
       ballot = ballotList.getBallot(i)
@@ -433,7 +433,7 @@ class Ballots(object):
       extension = os.path.splitext(fName)[1][1:]
     loaderClass = getLoaderPluginClass(extension, exclude0)
     if loaderClass is None:
-      raise RuntimeError, "Do not know how to load files with extension %s." % (extension)
+      raise RuntimeError("Do not know how to load files with extension %s." % (extension))
 
     self.loader = loaderClass()
     self.loader.load(self, fName)
@@ -457,7 +457,7 @@ class Ballots(object):
       try:
         self.loader = loaderClass()
         self.loader.load(self, fName)
-      except RuntimeError, (msg,):
+      except RuntimeError( (msg,)):
         errorMsg += "\n" + msg.strip()
       else:
         break
@@ -487,7 +487,7 @@ class Ballots(object):
     check = order[:]
     check.sort()
     if check != range(self.numCandidates):
-      raise RuntimeError, "Must specify all the candidates when reordering."
+      raise RuntimeError("Must specify all the candidates when reordering.")
 
     # Set up a translation list.
     # order gives the desired candidate order, e.g., [4 0 3 1 2]
