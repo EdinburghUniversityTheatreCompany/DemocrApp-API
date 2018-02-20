@@ -74,5 +74,5 @@ class Option(models.Model):
 
 class BallotEntry(models.Model):
     token = models.ForeignKey(VoterToken, on_delete=models.DO_NOTHING)
-    candidate = models.ForeignKey(Option, on_delete=models.CASCADE)
+    option = models.ForeignKey(Option, on_delete=models.CASCADE)
     value = models.SmallIntegerField

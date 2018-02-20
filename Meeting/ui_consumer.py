@@ -18,35 +18,59 @@ class UIConsumer(JsonWebsocketConsumer):
         options.get(message['content'], self.bad_message)(message)
 
     def authenticate(self, message):
-        key = message['key']
+        key = message['token']
         self.auth_token = AuthToken.objects.filter(pk=97305076).first()
         if self.auth_token is not None:
             if self.auth_token.token_set.valid():
                 self.vote_token = self.auth_token.votertoken_set.filter(proxy=False).first()
+                voters = [{self.vote_token.id: {"type": "primary"}}]
                 if self.auth_token.has_proxy:
                     self.proxy_token = self.auth_token.votertoken_set.filter(proxy=True).first()
-                    # TODO(notify the ui it has proxies)
-                else:
-                    pass
-                    # TODO(notify the ui it doesnt have proxies)
+                    voters.append({self.proxy_token.id: {"type": "proxy"}})
+                reply = {"auth_response": True,
+                        "result": "success",
+                        "client-token": "[token]",  # TODO(Find out what client token means)
+                        "voters": voters,
+                        "meeting-name": self.auth_token.token_set.meeting.name,
+                        "session-timeout": "[timeout]",  # TODO(not sure what to put in here)
+                        "client-no": 1}  # TODO(Work out some channels fu to count channels with a certain property)
+                self.send_json(reply)
             else:
                 self.send_json({"ERROR": "Old Auth Token"}, close=True)
         else:
             self.send_json({"ERROR": "Bad Auth Token"}, close=True)
 
     def process_votes(self, message):
-        vote_num = message['vote_number']
+        vote_num = message['ballot_id']
         vote = Vote.objects.filter(pk=vote_num).first()
         if self.auth_token.valid_for(vote) and vote.live:
-            for x in message['votes'].items():
-                option = vote.option_set.filter(pk=x[0]).first()
-                if option is not None:
-                    be = BallotEntry(vote=option, token=self.vote_token)
-                    be.value = x[1]
-                    be.save()
+            for voter in message['votes'].items():
+                for x in voter[1].items():
+                    option = vote.option_set.filter(pk=x[0]).first()
+                    if option is not None and voter[0] in [self.proxy_token.id, self.vote_token.id]:
+                        be = BallotEntry(option=option, token_id=voter[0], value=x[1])
+                        be.save()
 
-    def vote_opening(self,event):
+    def vote_opening(self, event):
         self.send_json({"event": event})
+        vote_id = 6
+        options = []  # TODO(retrieve all vote.option.name)
+        message = {
+            "ballot_id": vote_id,
+            "title": "vote.name",
+            "desc": "vote.description",
+            "method": "vote.method",
+            "options": options,
+            "proxies?": True,
+            "timeout": "[timeout]"  # TODO(not sure what to put in here)
+        }
+
+    def vote_closing(self, event):
+        message = {
+            "ballot_id": "vote.id",
+            "reason": "[optional reason string]"
+        }
+        self.send_json(message)
 
     def bad_message(self, content):
         pass
