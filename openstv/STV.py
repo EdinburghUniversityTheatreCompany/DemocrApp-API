@@ -156,13 +156,13 @@ class ElectionMethod(object):
     
     # some basic minimum requirements
     if self.b.numCandidates < 2:
-      raise RuntimeError, """\
+      raise RuntimeError( """\
 Not enough candidates to run an election.
 Need at least %d candidates but have only %d.""" % (
-        max(2, self.numSeats+1), self.b.numCandidates)
+        max(2, self.numSeats+1), self.b.numCandidates))
 
     if self.numSeats < 1:
-      raise RuntimeError, "The number of seats must be at least 1."
+      raise RuntimeError( "The number of seats must be at least 1.")
 
   def findTiedCand(self, candidateList, mostfewest, values):
     """Return a list of candidates tied for first or last.
