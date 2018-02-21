@@ -4,7 +4,7 @@ import random
 
 class Meeting(models.Model):
     time = models.DateTimeField
-    name = models.CharField
+    name = models.TextField(default='')
     close_time = models.DateTimeField(null=True)
 
     def open(self):
@@ -46,7 +46,7 @@ class AuthToken(models.Model):
             super(AuthToken, self).save(args, kwargs)
             vt = VoterToken(auth_token_id=self.pk)
             vt.save()
-            if self.proxy:
+            if self.has_proxy:
                 vt = VoterToken(auth_token_id=self.pk, proxy=True)
                 vt.save()
         else:
@@ -69,11 +69,11 @@ class Vote(models.Model):
     NEEDS_TIE_BREAKER = "TI"
     CLOSED = "CL"
     states = (
-        (READY, "Ready")
-        (LIVE, "Live")
-        (COUNTING, "Counting")
-        (NEEDS_TIE_BREAKER, "Needs Tie Breaker")
-        (CLOSED, "closed")
+        (READY, "Ready"),
+        (LIVE, "Live"),
+        (COUNTING, "Counting"),
+        (NEEDS_TIE_BREAKER, "Needs Tie Breaker"),
+        (CLOSED, "closed"),
     )
     state = models.CharField(max_length=2, default=READY, choices=states)
 

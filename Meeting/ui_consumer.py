@@ -8,6 +8,8 @@ class UIConsumer(JsonWebsocketConsumer):
 
     def websocket_connect(self, message):
         self.accept()
+        async_to_sync(self.channel_layer.group_add)("broadcast", self.channel_name)
+        self.send_json({'message': 'hi'})
 
     def websocket_disconnect(self, message):
         async_to_sync(self.channel_layer.group_discard)("broadcast", self.channel_name)
@@ -18,31 +20,29 @@ class UIConsumer(JsonWebsocketConsumer):
             'authentication': self.authenticate,
             'votes': self.process_votes
         }
-        options.get(message['content'], self.bad_message)(message)
+        options.get(message['type'], self.bad_message)(message)
 
     def authenticate(self, message):
         key = message['token']
-        self.auth_token = AuthToken.objects.filter(pk=97305076).first()
+        self.auth_token = AuthToken.objects.filter(pk=key).first()
         if self.auth_token is not None:
             if self.auth_token.token_set.valid():
                 self.vote_token = self.auth_token.votertoken_set.filter(proxy=False).first()
-                async_to_sync(self.channel_layer.group_add)("broadcast", self.channel_name)
-                voters = {self.vote_token.id: {"type": "primary"}}
+                voters = {self.vote_token.id.__str__(): {"type": "primary"}}
                 if self.auth_token.has_proxy:
                     self.proxy_token = self.auth_token.votertoken_set.filter(proxy=True).first()
-                    voters[self.proxy_token.id] = {"type": "proxy"}
+                    voters[self.proxy_token.id.__str__()] = {"type": "proxy"}
                 reply = {"auth_response": True,
                         "result": "success",
-                        "client-token": "[token]",  # TODO(Find out what client token means)
+                        "client-token": "token",  # TODO(Find out what client token means)
                         "voters": voters,
                         "meeting-name": self.auth_token.token_set.meeting.name,
-                        "session-timeout": "[timeout]",  # TODO(not sure what to put in here)
                         "client-no": 1}  # TODO(Work out some channels fu to count channels with a certain property)
                 self.send_json(reply)
             else:
-                self.send_json({"ERROR": "Old Auth Token"}, close=True)
+                self.send_json({"ERROR": "Old Auth Token"})
         else:
-            self.send_json({"ERROR": "Bad Auth Token"}, close=True)
+            self.send_json({"ERROR": "Bad Auth Token"})
 
     def process_votes(self, message):
         vote_num = message['ballot_id']

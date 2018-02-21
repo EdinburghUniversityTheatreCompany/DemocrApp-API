@@ -6,5 +6,6 @@ admin.site.register(Meeting)
 
 
 class AuthTokenAdmin(admin.ModelAdmin):
-    fields = ['proxy', 'token_set']
-admin.site.register(AuthToken,AuthTokenAdmin)
+    fields = ['has_proxy', 'token_set']
+admin.site.register(AuthToken, AuthTokenAdmin)
+admin.site.register(TokenSet)
