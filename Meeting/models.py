@@ -63,7 +63,19 @@ class Vote(models.Model):
     name = models.CharField
     description = models.TextField
     method = models.CharField
-    live = models.BooleanField(default=False)
+    READY = 'RE'
+    LIVE = 'LI'
+    COUNTING = "CO"
+    NEEDS_TIE_BREAKER = "TI"
+    CLOSED = "CL"
+    states = (
+        (READY, "Ready")
+        (LIVE, "Live")
+        (COUNTING, "Counting")
+        (NEEDS_TIE_BREAKER, "Needs Tie Breaker")
+        (CLOSED, "closed")
+    )
+    state = models.CharField(max_length=2, default=READY, choices=states)
 
 
 class Option(models.Model):
@@ -73,6 +85,9 @@ class Option(models.Model):
 
 
 class BallotEntry(models.Model):
+    class Meta:
+        unique_together = (('token', 'option'),)
+
     token = models.ForeignKey(VoterToken, on_delete=models.DO_NOTHING)
     option = models.ForeignKey(Option, on_delete=models.CASCADE)
     value = models.SmallIntegerField
