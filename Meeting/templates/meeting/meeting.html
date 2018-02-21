@@ -1,0 +1,21 @@
+<h1>{{ meeting.name }}</h1>
+<ol>
+    {% for t_set in token_sets %}
+        <li>{{ t_set.created_at }}</li>
+    {% endfor %}
+</ol>
+
+<table>
+    <tr>
+        <td>name</td>
+        <td>status</td>
+        <td></td>
+    </tr>
+    {% for vote in votes %}
+        <tr>
+        <td>vote.name</td>
+        <td>vote.status</td>
+        <td>{# buttons such as open, count and resolve conflict #}</td>
+        </tr>
+    {% endfor %}
+</table>
