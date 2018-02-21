@@ -16,6 +16,7 @@ def runOpenSTV(vote_id):
         option_translation[option.id] = index
         names.append(option.name)
     ballots.setNames(names)
+    ballots.numSeats = 1  # TODO(Decide on method of storing number of seats available)
 
     voter = -1
     ballot = []
