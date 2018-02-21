@@ -8,7 +8,10 @@ class UIConsumer(JsonWebsocketConsumer):
 
     def websocket_connect(self, message):
         self.accept()
-        async_to_sync(self.channel_layer.group_add)("broadcast", self.channel_name)
+
+    def websocket_disconnect(self, message):
+        async_to_sync(self.channel_layer.group_discard)("broadcast", self.channel_name)
+        self.close()
 
     def receive_json(self, message, **kwargs):
         options = {
@@ -23,10 +26,11 @@ class UIConsumer(JsonWebsocketConsumer):
         if self.auth_token is not None:
             if self.auth_token.token_set.valid():
                 self.vote_token = self.auth_token.votertoken_set.filter(proxy=False).first()
-                voters = [{self.vote_token.id: {"type": "primary"}}]
+                async_to_sync(self.channel_layer.group_add)("broadcast", self.channel_name)
+                voters = {self.vote_token.id: {"type": "primary"}}
                 if self.auth_token.has_proxy:
                     self.proxy_token = self.auth_token.votertoken_set.filter(proxy=True).first()
-                    voters.append({self.proxy_token.id: {"type": "proxy"}})
+                    voters[self.proxy_token.id] = {"type": "proxy"}
                 reply = {"auth_response": True,
                         "result": "success",
                         "client-token": "[token]",  # TODO(Find out what client token means)
@@ -52,9 +56,11 @@ class UIConsumer(JsonWebsocketConsumer):
                         be.save()
 
     def vote_opening(self, event):
-        self.send_json({"event": event})
+        vote = Vote.objects.get(event['vote_id'])
         vote_id = 6
-        options = []  # TODO(retrieve all vote.option.name)
+        options = {}
+        for option in vote.option_set.all():
+            options[option.id] = option.name
         message = {
             "ballot_id": vote_id,
             "title": "vote.name",
