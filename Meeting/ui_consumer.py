@@ -57,7 +57,7 @@ class UIConsumer(JsonWebsocketConsumer):
                     BallotEntry.objects.filter(token_id=voter, option__vote=vote).delete()
                     for ballot_entry in voter[1].items():
                         option = vote.option_set.filter(pk=ballot_entry[0]).first()
-                        if option is not None:
+                        if option is not None and ballot_entry[1] >= 1:
                             be = BallotEntry(option=option, token_id=voter[0], value=ballot_entry[1])
                             be.save()
 
