@@ -89,6 +89,8 @@ class Vote(models.Model):
 
 
 class Option(models.Model):
+    class Meta:
+        unique_together = (('vote', 'name'),)
     vote = models.ForeignKey(Vote, on_delete=models.CASCADE)
     name = models.TextField(default='')
     link = models.URLField
@@ -103,3 +105,8 @@ class BallotEntry(models.Model):
     token = models.ForeignKey(VoterToken, on_delete=models.DO_NOTHING)
     option = models.ForeignKey(Option, on_delete=models.CASCADE)
     value = models.SmallIntegerField
+
+
+class Tie(models.Model):
+    vote = models.ForeignKey(Vote, on_delete=models.CASCADE())
+    option = models.ForeignKey(Option, on_delete=models.CASCADE())
