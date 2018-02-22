@@ -9,7 +9,6 @@ class UIConsumer(JsonWebsocketConsumer):
     def websocket_connect(self, message):
         self.accept()
         async_to_sync(self.channel_layer.group_add)("broadcast", self.channel_name)
-        self.send_json({'message': 'hi'})
 
     def websocket_disconnect(self, message):
         async_to_sync(self.channel_layer.group_discard)("broadcast", self.channel_name)
@@ -17,27 +16,30 @@ class UIConsumer(JsonWebsocketConsumer):
 
     def receive_json(self, message, **kwargs):
         options = {
-            'authentication': self.authenticate,
+            'auth_request': self.authenticate,
             'votes': self.process_votes
         }
         options.get(message['type'], self.bad_message)(message)
 
     def authenticate(self, message):
-        key = message['token']
-        self.auth_token = AuthToken.objects.filter(pk=key).first()
-        if self.auth_token is not None:
-            if self.auth_token.token_set.valid():
-                self.vote_token = self.auth_token.votertoken_set.filter(proxy=False).first()
+        key = message['session_token']
+        self.session = Session.objects.filter(pk=key).first()
+        if self.session is not None:
+            self.session.channel = self.channel_name
+            self.session.save()
+            self.boot_others()
+            auth_token = self.session.auth_token
+            if auth_token.token_set.valid():
+                self.vote_token = auth_token.votertoken_set.filter(proxy=False).first()
                 voters = {self.vote_token.id.__str__(): {"type": "primary"}}
-                if self.auth_token.has_proxy:
-                    self.proxy_token = self.auth_token.votertoken_set.filter(proxy=True).first()
+                if auth_token.has_proxy:
+                    self.proxy_token = auth_token.votertoken_set.filter(proxy=True).first()
                     voters[self.proxy_token.id.__str__()] = {"type": "proxy"}
-                reply = {"auth_response": True,
+                reply = {"type": "auth_response",
                         "result": "success",
-                        "client-token": "token",  # TODO(Find out what client token means)
                         "voters": voters,
-                        "meeting-name": self.auth_token.token_set.meeting.name,
-                        "client-no": 1}  # TODO(Work out some channels fu to count channels with a certain property)
+                        "meeting_name": auth_token.token_set.meeting.name,
+                        }
                 self.send_json(reply)
             else:
                 self.send_json({"ERROR": "Old Auth Token"})
@@ -55,21 +57,28 @@ class UIConsumer(JsonWebsocketConsumer):
                         be = BallotEntry(option=option, token_id=voter[0], value=x[1])
                         be.save()
 
+    def boot_others(self):
+        others = Session.objects.filter(auth_token=self.session.auth_token)
+        others = others.exclude(pk=self.session.id)
+        others = others.exclude(channel=None)
+        for other_session in others.all():
+            async_to_sync(self.channel_layer.send)(other_session.channel, {"type": "boot"})
+
     def vote_opening(self, event):
-        vote = Vote.objects.get(event['vote_id'])
-        vote_id = 6
+        vote = Vote.objects.get(pk=event['vote_id'])
         options = {}
         for option in vote.option_set.all():
             options[option.id] = option.name
         message = {
-            "ballot_id": vote_id,
-            "title": "vote.name",
-            "desc": "vote.description",
-            "method": "vote.method",
+            "type": "ballot",
+            "ballot_id": vote.id,
+            "title": vote.name,
+            "desc": vote.description,
+            "method": vote.method,
             "options": options,
             "proxies?": True,
-            "timeout": "[timeout]"  # TODO(not sure what to put in here)
         }
+        self.send_json(message)
 
     def vote_closing(self, event):
         message = {
@@ -77,6 +86,15 @@ class UIConsumer(JsonWebsocketConsumer):
             "reason": "[optional reason string]"
         }
         self.send_json(message)
+
+    def boot(self, event):
+        message = {
+            "type": "terminate_session",
+            "reason": "New Client Connected"
+        }
+        self.send_json(message)
+        self.websocket_disconnect(None)
+
 
     def bad_message(self, content):
         pass

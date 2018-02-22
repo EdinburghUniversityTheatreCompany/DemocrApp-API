@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import Meeting, TokenSet, AuthToken
+from .models import Meeting, TokenSet, AuthToken, Session
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
@@ -11,9 +11,20 @@ def check_token(request, meeting_id):
     meeting = get_object_or_404(Meeting, pk=meeting_id)
     current_set = meeting.tokenset_set.latest('created_at')
     if current_set.authtoken_set.filter(pk=token).exists():
-        return HttpResponse(":D")
+        s = Session(auth_token_id=token)
+        s.save()
+        sessions = Session.objects.filter(auth_token_id=token)
+        response = {
+            "success": True,
+            "session_token": s.id,
+            "num_sessions": sessions.count(),
+            "active_sessions": sessions.exclude(channel=None).count(),
+        }
+        response = JsonResponse(response)
     else:
-        return HttpResponse("Bad Token")
+        response = JsonResponse({"success": False, "reason": "BadToken"})
+    response["Access-Control-Allow-Origin"] = "*"
+    return response
 
 def new_vote(request, meeting_id):
     channel_layer = get_channel_layer()

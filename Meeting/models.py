@@ -1,4 +1,5 @@
 from django.db import models
+import uuid
 import random
 
 
@@ -19,11 +20,6 @@ class TokenSet(models.Model):
         return self == self.meeting.tokenset_set.latest('created_at') and self.meeting.open()
 
 
-class Device(models.Model):
-    expires = models.DateTimeField
-    fingerprint = models.IntegerField
-
-
 def get_new_token_id():
     x = -1
     while x == -1 or AuthToken.objects.filter(pk=x).exists():
@@ -33,8 +29,7 @@ def get_new_token_id():
 
 class AuthToken(models.Model):
     token_set = models.ForeignKey(TokenSet, on_delete=models.CASCADE)
-    device = models.ForeignKey(Device, on_delete=models.DO_NOTHING, null=True)
-    creator = models.CharField
+    creator = models.TextField
     has_proxy = models.BooleanField(default=False)
     id = models.PositiveIntegerField(primary_key=True, default=get_new_token_id)
 
@@ -53,6 +48,12 @@ class AuthToken(models.Model):
             super(AuthToken, self).save(args, kwargs)
 
 
+class Session(models.Model):
+    id = models.UUIDField(primary_key=True,default=uuid.uuid4)
+    auth_token = models.ForeignKey(AuthToken, on_delete=models.CASCADE)
+    channel = models.TextField(null=True)
+
+
 class VoterToken(models.Model):
     auth_token = models.ForeignKey(AuthToken, on_delete=models.CASCADE)
     proxy = models.BooleanField(default=False)
@@ -60,9 +61,15 @@ class VoterToken(models.Model):
 
 class Vote(models.Model):
     token_set = models.ForeignKey(TokenSet, on_delete=models.CASCADE)
-    name = models.CharField
-    description = models.TextField
-    method = models.CharField
+    name = models.TextField(default='')
+    description = models.TextField(default='')
+    YES_NO_ABS = "YNA"
+    STV = "STV"
+    methods = (
+        (YES_NO_ABS, "Yes No Abs"),
+        (STV, "Single Transferable Vote"),
+    )
+    method = models.CharField(max_length=3, default=STV, choices=methods)
     READY = 'RE'
     LIVE = 'LI'
     COUNTING = "CO"
@@ -73,20 +80,22 @@ class Vote(models.Model):
         (LIVE, "Live"),
         (COUNTING, "Counting"),
         (NEEDS_TIE_BREAKER, "Needs Tie Breaker"),
-        (CLOSED, "closed"),
+        (CLOSED, "Closed"),
     )
     state = models.CharField(max_length=2, default=READY, choices=states)
 
 
 class Option(models.Model):
     vote = models.ForeignKey(Vote, on_delete=models.CASCADE)
-    name = models.CharField
+    name = models.TextField(default='')
     link = models.URLField
 
 
 class BallotEntry(models.Model):
     class Meta:
-        unique_together = (('token', 'option'),)
+        unique_together = (('token', 'option'),
+                           #('option__vote', 'value')
+                           )
 
     token = models.ForeignKey(VoterToken, on_delete=models.DO_NOTHING)
     option = models.ForeignKey(Option, on_delete=models.CASCADE)

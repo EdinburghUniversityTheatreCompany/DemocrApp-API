@@ -25,7 +25,7 @@ SECRET_KEY = '82*8z&b6iz1yj+)!-c+%0zc(=&)&3=grvzo0o-&&jw@3t3a9hg'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.0.38']
+ALLOWED_HOSTS = ['192.168.0.38', 'democrapp.eutc.org.uk']
 
 
 # Application definition
