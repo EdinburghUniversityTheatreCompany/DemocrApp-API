@@ -19,6 +19,9 @@ class TokenSet(models.Model):
     def valid(self):
         return self == self.meeting.tokenset_set.latest('created_at') and self.meeting.open()
 
+    class Meta:
+        get_latest_by = 'created_at'
+
 
 def get_new_token_id():
     x = -1
