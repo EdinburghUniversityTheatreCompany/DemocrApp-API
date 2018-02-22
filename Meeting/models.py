@@ -88,11 +88,16 @@ class Vote(models.Model):
     state = models.CharField(max_length=2, default=READY, choices=states)
 
     def save(self, *args, **kwargs):
-        super(Vote, self).save(args, kwargs)
         if self._state.adding and self.method == self.YES_NO_ABS:
+            super(Vote, self).save(args, kwargs)
             Option(vote=self, name="yes").save()
             Option(vote=self, name="no").save()
             Option(vote=self, name="abs").save()
+        else:
+            super(Vote, self).save(args, kwargs)
+
+    def __str__(self):
+        return self.name
 
 
 
@@ -102,6 +107,9 @@ class Option(models.Model):
     vote = models.ForeignKey(Vote, on_delete=models.CASCADE)
     name = models.TextField(default='')
     link = models.URLField
+
+    def __str__(self):
+        return "vote {}: {}".format(self.vote.name, self.name)
 
 
 class BallotEntry(models.Model):
