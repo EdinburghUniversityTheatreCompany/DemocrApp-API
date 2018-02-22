@@ -25,9 +25,9 @@ class UIConsumer(JsonWebsocketConsumer):
         key = message['session_token']
         self.session = Session.objects.filter(pk=key).first()
         if self.session is not None:
+            self.boot_others()
             self.session.channel = self.channel_name
             self.session.save()
-            self.boot_others()
             auth_token = self.session.auth_token
             if auth_token.token_set.valid():
                 self.vote_token = auth_token.votertoken_set.filter(proxy=False).first()
