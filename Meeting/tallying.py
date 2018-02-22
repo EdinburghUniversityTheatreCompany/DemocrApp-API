@@ -3,6 +3,8 @@ from .models import Vote, BallotEntry, Option, Tie
 from openstv.ballots import Ballots
 from openstv.MethodPlugins.ScottishSTV import ScottishSTV
 from time import sleep
+import logging
+logger = logging.getLogger(__name__)
 
 
 def yes_no_abs_count(vote_id):
@@ -45,6 +47,7 @@ def run_open_stv(vote_id,seats):
         else:
             status = "Counting votes using %s\nInitializing..." % \
                      electionCounter.longMethodName
+    logger.info(electionCounter.winners)
 
 
 def ask_user_to_break_tie(tied_candidates, names, what, vote):
@@ -58,8 +61,6 @@ def ask_user_to_break_tie(tied_candidates, names, what, vote):
         sleep(1)
 
     if Tie.objects.filter(vote=vote)[:1].count() > 1:
-        import logging
-        logger = logging.getLogger(__name__)
         logger.error('multiple tie objects after vote')
     tie = Tie.objects.filter(vote=vote).first()
     i = names.index(tie.option.name)
