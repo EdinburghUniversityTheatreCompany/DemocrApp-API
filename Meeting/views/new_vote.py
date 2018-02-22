@@ -12,7 +12,7 @@ def new_vote(request, meeting_id):
     name = request.POST['name']
     description = request.POST['description']
     method = request.POST['method_code']
-    if method in Vote.states:
+    if method in Vote.methods:
         return JsonResponse({"error": "bad method code"})
     vote = Vote(name=name, description=description, method=method, token_set=token_sets.latest())
     vote.save()

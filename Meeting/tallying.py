@@ -1,11 +1,11 @@
 from threading import Thread
-
 from .models import Vote, BallotEntry, Option
 from openstv.ballots import Ballots
 from openstv.MethodPlugins.ScottishSTV import ScottishSTV
 from time import sleep
 
-def runOpenSTV(vote_id):
+
+def run_open_stv(vote_id,seats):
     ballots = Ballots()
     vote = Vote.objects.get(pk=vote_id)
 
@@ -16,7 +16,7 @@ def runOpenSTV(vote_id):
         option_translation[option.id] = index
         names.append(option.name)
     ballots.setNames(names)
-    ballots.numSeats = 1  # TODO(Decide on method of storing number of seats available)
+    ballots.numSeats = seats  # TODO(Decide on method of storing number of seats available)
 
     voter = -1
     ballot = []
@@ -33,7 +33,7 @@ def runOpenSTV(vote_id):
         sleep(0.1)
         if not electionCounter.breakTieRequestQueue.empty():
             [tiedCandidates, names, what] = electionCounter.breakTieRequestQueue.get()
-            c = askUserToBreakTie(tiedCandidates, names, what)
+            c = ask_user_to_break_tie(tiedCandidates, names, what, vote)
             electionCounter.breakTieResponseQueue.put(c)
         if "R" in vars(electionCounter):
             status = "Counting votes using %s\nRound: %d" % \
@@ -43,3 +43,9 @@ def runOpenSTV(vote_id):
                      electionCounter.longMethodName
 
 
+def ask_user_to_break_tie(tied_candidates, names, what, vote):
+    vote.state = vote.NEEDS_TIE_BREAKER
+    vote.save()
+    while vote.state == vote.NEEDS_TIE_BREAKER:
+        sleep(1)
+    # TODO(create a tie model holding tied candidates)
