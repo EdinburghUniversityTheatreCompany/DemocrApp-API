@@ -87,6 +87,14 @@ class Vote(models.Model):
     )
     state = models.CharField(max_length=2, default=READY, choices=states)
 
+    def save(self, *args, **kwargs):
+        super(Vote, self).save(args, kwargs)
+        if self._state.adding and self.method == self.YES_NO_ABS:
+            Option(vote=self, name="yes").save()
+            Option(vote=self, name="no").save()
+            Option(vote=self, name="abs").save()
+
+
 
 class Option(models.Model):
     class Meta:
