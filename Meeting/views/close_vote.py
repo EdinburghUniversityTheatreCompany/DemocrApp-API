@@ -17,7 +17,6 @@ def close_vote(request, meeting_id, vote_id):
         Vote.STV: stv(vote, request.POST['num_seats']),
     }
     count_method[vote.method]
-    num_seats = request.POST['num_seats']
     vote.state = vote.COUNTING
     vote.save()
     message = {'type': 'success'}
@@ -25,7 +24,8 @@ def close_vote(request, meeting_id, vote_id):
 
 
 def yes_no_abs(vote):
-    from ..tallying import *
+    from ..tallying import yes_no_abs_count
+    pass
 
 
 def stv(vote, seats):

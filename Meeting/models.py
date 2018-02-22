@@ -108,5 +108,5 @@ class BallotEntry(models.Model):
 
 
 class Tie(models.Model):
-    vote = models.ForeignKey(Vote, on_delete=models.CASCADE())
-    option = models.ForeignKey(Option, on_delete=models.CASCADE())
+    vote = models.ForeignKey(Vote, on_delete=models.CASCADE)
+    option = models.ForeignKey(Option, on_delete=models.CASCADE)

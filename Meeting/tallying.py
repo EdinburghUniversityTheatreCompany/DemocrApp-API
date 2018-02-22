@@ -5,6 +5,10 @@ from openstv.MethodPlugins.ScottishSTV import ScottishSTV
 from time import sleep
 
 
+def yes_no_abs_count(vote_id):
+    pass
+
+
 def run_open_stv(vote_id,seats):
     ballots = Ballots()
     vote = Vote.objects.get(pk=vote_id)
@@ -44,7 +48,7 @@ def run_open_stv(vote_id,seats):
 
 
 def ask_user_to_break_tie(tied_candidates, names, what, vote):
-    for candidate in tied_candidates:
+    for candidate in names:
         option = Option.objects.filter(name=candidate, vote=vote).first()
         tie = Tie(vote=vote, option=option)
         tie.save()
