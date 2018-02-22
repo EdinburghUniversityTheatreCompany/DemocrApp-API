@@ -76,7 +76,7 @@ class UIConsumer(JsonWebsocketConsumer):
             "desc": vote.description,
             "method": vote.method,
             "options": options,
-            "proxies?": True,
+            "proxies": True,
         }
         self.send_json(message)
 
