@@ -6,7 +6,7 @@ from ..models import Meeting, Vote
 
 @login_required(login_url='/admin/login')
 @permission_required('meeting.can_create')
-def meeting(request, meeting_id):
+def new_vote(request, meeting_id):
     meeting = get_object_or_404(Meeting, pk=meeting_id)
     token_sets = meeting.tokenset_set.order_by('created_at').all()
     name = request.POST['name']
