@@ -31,16 +31,18 @@ class UIConsumer(JsonWebsocketConsumer):
             auth_token = self.session.auth_token
             if auth_token.token_set.valid():
                 self.vote_token = auth_token.votertoken_set.filter(proxy=False).first()
-                voters = {self.vote_token.id.__str__(): {"type": "primary"}}
+                voters = [{"token": self.vote_token.id, "type": "primary"}]
                 if auth_token.has_proxy:
                     self.proxy_token = auth_token.votertoken_set.filter(proxy=True).first()
-                    voters[self.proxy_token.id.__str__()] = {"type": "proxy"}
+                    voters.append({"token": self.proxy_token.id, "type": "proxy"})
                 reply = {"type": "auth_response",
                         "result": "success",
                         "voters": voters,
                         "meeting_name": auth_token.token_set.meeting.name,
                         }
                 self.send_json(reply)
+                for vote in Vote.objects.filter(token_set=auth_token.token_set).all():
+                    self.send_vote(vote)
             else:
                 self.send_json({"ERROR": "Old Auth Token"})
         else:
@@ -51,11 +53,13 @@ class UIConsumer(JsonWebsocketConsumer):
         vote = Vote.objects.filter(pk=vote_num).first()
         if self.auth_token.valid_for(vote) and vote.live:
             for voter in message['votes'].items():
-                for x in voter[1].items():
-                    option = vote.option_set.filter(pk=x[0]).first()
-                    if option is not None and voter[0] in [self.proxy_token.id, self.vote_token.id]:
-                        be = BallotEntry(option=option, token_id=voter[0], value=x[1])
-                        be.save()
+                if voter[0] in [self.proxy_token.id, self.vote_token.id]:
+                    BallotEntry.objects.filter(token_id=voter, option__vote=vote).delete()
+                    for ballot_entry in voter[1].items():
+                        option = vote.option_set.filter(pk=ballot_entry[0]).first()
+                        if option is not None:
+                            be = BallotEntry(option=option, token_id=voter[0], value=ballot_entry[1])
+                            be.save()
 
     def boot_others(self):
         others = Session.objects.filter(auth_token=self.session.auth_token)
@@ -66,9 +70,15 @@ class UIConsumer(JsonWebsocketConsumer):
 
     def vote_opening(self, event):
         vote = Vote.objects.get(pk=event['vote_id'])
-        options = {}
+        self.send_vote(vote)
+
+    def send_vote(self, vote):
+        options = []
         for option in vote.option_set.all():
-            options[option.id] = option.name
+            options.append({
+                "id": option.id,
+                "name": option.name,
+            })
         message = {
             "type": "ballot",
             "ballot_id": vote.id,
