@@ -8,8 +8,22 @@ logger = logging.getLogger(__name__)
 
 
 def yes_no_abs_count(vote_id):
-    pass
-
+    vote = Vote.objects.get(pk=vote_id)
+    assert vote.method == Vote.YES_NO_ABS
+    yes_counter = 0
+    no_counter = 0
+    abs_counter = 0
+    actions = {
+        vote.option_set.filter(name="yes").first().id: yes_counter,
+        vote.option_set.filter(name="no").first().id: no_counter,
+        vote.option_set.filter(name="abs").first().id: abs_counter,
+    }
+    for be in BallotEntry.objects.filter(option__vote=vote, value=1).order_by('token_id', 'value').all():
+        if be.option_id in actions.keys():
+            actions[be.option_id] += 1
+        else:
+            logger.error("suspicious ballot entry with id: {} had non y n a option in a y n a vote")
+    return yes_counter, no_counter, abs_counter
 
 def run_open_stv(vote_id,seats):
     ballots = Ballots()
@@ -26,7 +40,7 @@ def run_open_stv(vote_id,seats):
 
     voter = -1
     ballot = []
-    for be in BallotEntry.objects.filter(candidate__vote=vote).order_by('token_id', 'value').all():
+    for be in BallotEntry.objects.filter(option__vote=vote).order_by('token_id', 'value').all():
         if voter != be.token_id and ballot != []:
             ballots.appendBallot(ballot)
         voter = be.token_id
