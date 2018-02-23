@@ -17,7 +17,7 @@ class UIConsumer(JsonWebsocketConsumer):
     def receive_json(self, message, **kwargs):
         options = {
             'auth_request': self.authenticate,
-            'votes': self.process_votes
+            'ballot_form': self.process_votes
         }
         options.get(message['type'], self.bad_message)(message)
 
@@ -51,15 +51,27 @@ class UIConsumer(JsonWebsocketConsumer):
     def process_votes(self, message):
         vote_num = message['ballot_id']
         vote = Vote.objects.filter(pk=vote_num).first()
-        if self.auth_token.valid_for(vote) and vote.live:
+        tokens = []
+        if self.session.auth_token.valid_for(vote) and vote.state == Vote.LIVE:
             for voter in message['votes'].items():
-                if voter[0] in [self.proxy_token.id, self.vote_token.id]:
+                voter_id = int(voter[0])
+                ballot_entries = voter[1]
+                if voter_id in [self.proxy_token.id, self.vote_token.id]:
                     BallotEntry.objects.filter(token_id=voter, option__vote=vote).delete()
-                    for ballot_entry in voter[1].items():
+                    tokens.append(voter_id)
+                    for ballot_entry in ballot_entries.items():
+                        value = int(ballot_entry[1])
                         option = vote.option_set.filter(pk=ballot_entry[0]).first()
-                        if option is not None and ballot_entry[1] >= 1:
-                            be = BallotEntry(option=option, token_id=voter[0], value=ballot_entry[1])
+                        if option is not None and value >= 1:
+                            be = BallotEntry(option=option, token_id=voter_id, value=value)
                             be.save()
+
+        message = {
+            "type": "ballot_receipt",
+            "ballot_id": vote_num,
+            "voter_token": tokens,
+        }
+        self.send_json(message)
 
     def boot_others(self):
         others = Session.objects.filter(auth_token=self.session.auth_token)
@@ -104,6 +116,7 @@ class UIConsumer(JsonWebsocketConsumer):
         }
         self.send_json(message)
         self.websocket_disconnect(None)
+        self.session.delete()
 
 
     def bad_message(self, content):
