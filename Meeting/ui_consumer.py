@@ -23,30 +23,37 @@ class UIConsumer(JsonWebsocketConsumer):
 
     def authenticate(self, message):
         key = message['session_token']
-        self.session = Session.objects.filter(pk=key).first()
-        if self.session is not None:
-            self.boot_others()
-            self.session.channel = self.channel_name
-            self.session.save()
-            auth_token = self.session.auth_token
-            if auth_token.token_set.valid():
-                self.vote_token = auth_token.votertoken_set.filter(proxy=False).first()
-                voters = [{"token": self.vote_token.id, "type": "primary"}]
-                if auth_token.has_proxy:
-                    self.proxy_token = auth_token.votertoken_set.filter(proxy=True).first()
-                    voters.append({"token": self.proxy_token.id, "type": "proxy"})
-                reply = {"type": "auth_response",
-                        "result": "success",
-                        "voters": voters,
-                        "meeting_name": auth_token.token_set.meeting.name,
-                        }
-                self.send_json(reply)
-                for vote in Vote.objects.filter(token_set=auth_token.token_set).all():
-                    self.send_vote(vote)
+        try:
+            self.session = Session.objects.filter(pk=key).first()
+            if self.session is not None:
+                self.boot_others()
+                self.session.channel = self.channel_name
+                self.session.save()
+                auth_token = self.session.auth_token
+                if auth_token.token_set.valid():
+                    self.vote_token = auth_token.votertoken_set.filter(proxy=False).first()
+                    voters = [{"token": self.vote_token.id, "type": "primary"}]
+                    if auth_token.has_proxy:
+                        self.proxy_token = auth_token.votertoken_set.filter(proxy=True).first()
+                        voters.append({"token": self.proxy_token.id, "type": "proxy"})
+                    reply = {"type": "auth_response",
+                            "result": "success",
+                            "voters": voters,
+                            "meeting_name": auth_token.token_set.meeting.name,
+                            }
+                    self.send_json(reply)
+                    for vote in Vote.objects.filter(token_set=auth_token.token_set, state=Vote.LIVE).all():
+                        self.send_vote(vote)
+                else:
+                    self.send_json({"type": "auth_response",
+                                    "result": "failure",
+                                    "reason": "Old Auth Token"})
             else:
-                self.send_json({"ERROR": "Old Auth Token"})
-        else:
-            self.send_json({"ERROR": "Bad Auth Token"})
+                raise RuntimeError
+        except:
+            self.send_json({"type": "auth_response",
+                            "result": "failure",
+                            "reason": "Bad Auth Token"})
 
     def process_votes(self, message):
         vote_num = message['ballot_id']
@@ -104,8 +111,9 @@ class UIConsumer(JsonWebsocketConsumer):
 
     def vote_closing(self, event):
         message = {
+            "type": "ballot_closed",
             "ballot_id": "vote.id",
-            "reason": "[optional reason string]"
+            "reason": "[optional reason string]",
         }
         self.send_json(message)
 
@@ -117,7 +125,6 @@ class UIConsumer(JsonWebsocketConsumer):
         self.send_json(message)
         self.websocket_disconnect(None)
         self.session.delete()
-
 
     def bad_message(self, content):
         pass
