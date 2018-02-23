@@ -112,8 +112,15 @@ class UIConsumer(JsonWebsocketConsumer):
     def vote_closing(self, event):
         message = {
             "type": "ballot_closed",
-            "ballot_id": "vote.id",
+            "ballot_id": event['vote_id'],
             "reason": "[optional reason string]",
+        }
+        self.send_json(message)
+
+    def announcement(self, event):
+        message = {
+            "type": "announcement",
+            "message": event['message'],
         }
         self.send_json(message)
 
