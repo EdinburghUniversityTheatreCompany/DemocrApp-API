@@ -15,7 +15,7 @@ def break_tie(request, meeting_id, vote_id):
     if vote.state == Vote.NEEDS_TIE_BREAKER:
         if request.method == "GET":
             options = {}
-            for tied_candidate in vote.tie_set:
+            for tied_candidate in vote.tie_set.all():
                 options[tied_candidate.option.id] = {
                     "name": tied_candidate.option.name
                 }
