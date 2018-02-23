@@ -120,7 +120,7 @@ class BallotEntry(models.Model):
 
     token = models.ForeignKey(VoterToken, on_delete=models.DO_NOTHING)
     option = models.ForeignKey(Option, on_delete=models.CASCADE)
-    value = models.SmallIntegerField
+    value = models.SmallIntegerField(default=1)
 
 
 class Tie(models.Model):
