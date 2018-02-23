@@ -412,7 +412,7 @@ class Iterative(ElectionMethod):
       return c, desc + desc2
 
     # When method is "forward" or "backward" we use other rounds
-    order = range(R)
+    order = list(range(R))
     if self.weakTieBreakMethod == "backward":
       order.reverse()
     
