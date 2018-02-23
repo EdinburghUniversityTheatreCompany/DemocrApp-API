@@ -607,7 +607,7 @@ class STV(Iterative):
       text = self.newWinners(winners)
       # In some instances, updateWinners could be called more than once in a 
       # single round (e.g., N. Ireland STV when eliminating losers).
-      if self.roundInfo[self.R].has_key("winners"):
+      if "winners" in self.roundInfo[self.R]:
         self.roundInfo[self.R]["winners"] += text
       else:
         self.roundInfo[self.R]["winners"] = text
@@ -628,7 +628,7 @@ class STV(Iterative):
     elif self.roundInfo[self.R]["action"][0] == "eliminate":
       text = self.roundInfo[self.R]["eliminate"]
       
-    if self.roundInfo[self.R].has_key("winners"):
+    if "winners" in self.roundInfo[self.R]:
       text += self.roundInfo[self.R]["winners"]
       
     # Explain what will happen in the next round
@@ -1289,7 +1289,7 @@ class RecursiveSTV(OrderIndependentSTV):
     elif self.roundInfo[self.R]["action"][0] == "eliminate":
       text = self.roundInfo[self.R]["eliminate"]
       
-    if self.roundInfo[self.R].has_key("winners"):
+    if "winners" in self.roundInfo[self.R]:
       text += self.roundInfo[self.R]["winners"]
       
     self.msg[self.R] = text
@@ -1374,7 +1374,7 @@ class RecursiveSTV(OrderIndependentSTV):
       return
 
     # Create space if necessary.
-    if not tree.has_key(c):
+    if c not in tree:
       tree[c] = {}
       tree[c]["n"] = 0
       tree[c]["bi"] = []
