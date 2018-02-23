@@ -26,6 +26,7 @@ def yes_no_abs_count(vote_id):
             logger.error("suspicious ballot entry with id: {} had non y n a option in a y n a vote")
     return yes_counter, no_counter, abs_counter
 
+
 def run_open_stv(vote_id,seats):
     ballots = Ballots()
     vote = Vote.objects.get(pk=vote_id)
@@ -69,6 +70,9 @@ def run_open_stv(vote_id,seats):
                      electionCounter.longMethodName
         logger.debug(status)
     logger.info(electionCounter.winners)
+    vote.refresh_from_db()
+    vote.state = Vote.CLOSED
+    vote.save()
 
 
 def ask_user_to_break_tie(tied_candidates, names, what, vote):
