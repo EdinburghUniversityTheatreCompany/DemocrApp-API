@@ -43,8 +43,11 @@ def run_open_stv(vote_id,seats):
     for be in BallotEntry.objects.filter(option__vote=vote).order_by('token_id', 'value').all():
         if voter != be.token_id and ballot != []:
             ballots.appendBallot(ballot)
+            ballot = []
         voter = be.token_id
-        ballot.append(option_translation[be.id])
+        ballot.append(option_translation[be.option_id])
+    if ballots != []:
+        ballots.appendBallot(ballot)
 
     electionCounter = ScottishSTV(ballots)
     countThread = Thread(target=electionCounter.runElection)
