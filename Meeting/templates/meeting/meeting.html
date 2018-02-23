@@ -1,10 +1,11 @@
+{% load vote_helpers %}
+
 <h1>{{ meeting.name }}</h1>
 <ol>
     {% for t_set in token_sets %}
         <li>{{ t_set.created_at }}</li>
     {% endfor %}
 </ol>
-
 <table>
     <tr>
         <td>name</td>
@@ -13,9 +14,9 @@
     </tr>
     {% for vote in votes %}
         <tr>
-        <td>vote.name</td>
-        <td>vote.status</td>
-        <td>{# buttons such as open, count and resolve conflict #}</td>
+        <td>{{vote.name}}</td>
+        <td>{{vote.get_state_display}}</td>
+        <td>{% vote_action_button vote %}</td>
         </tr>
     {% endfor %}
 </table>
