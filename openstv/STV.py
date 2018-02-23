@@ -459,7 +459,7 @@ class Iterative(ElectionMethod):
   def newLosers(self, newLosersList):
     "Perform basic accounting when a new loser is found."
     
-    assert(newLosersList > 0)
+    assert(len(newLosersList) > 0)
     for c in newLosersList:
       self.continuing.remove(c)
       self.losers.add(c)
@@ -811,7 +811,8 @@ class STV(Iterative):
 
     if len(self.winners) == self.numSeats:
       # All others are losers
-      self.newLosers(list(self.continuing))
+      if len(self.continuing) > 0:
+        self.newLosers(list(self.continuing))
 
     else:
       # Candidates with no votes are losers
