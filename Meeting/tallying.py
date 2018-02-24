@@ -11,20 +11,17 @@ logger = logging.getLogger(__name__)
 def yes_no_abs_count(vote_id):
     vote = Vote.objects.get(pk=vote_id)
     assert vote.method == Vote.YES_NO_ABS
-    yes_counter = 0
-    no_counter = 0
-    abs_counter = 0
-    actions = {
-        vote.option_set.filter(name="yes").first().id: yes_counter,
-        vote.option_set.filter(name="no").first().id: no_counter,
-        vote.option_set.filter(name="abs").first().id: abs_counter,
+    counts = {
+        vote.option_set.filter(name="yes").first().id: 0,
+        vote.option_set.filter(name="no").first().id: 0,
+        vote.option_set.filter(name="abs").first().id: 0,
     }
     for be in BallotEntry.objects.filter(option__vote=vote, value=1).order_by('token_id', 'value').all():
-        if be.option_id in actions.keys():
-            actions[be.option_id] += 1
+        if be.option_id in counts.keys():
+            counts[be.option_id] += 1
         else:
             logger.error("suspicious ballot entry with id: {} had non y n a option in a y n a vote")
-    return yes_counter, no_counter, abs_counter
+    return counts.values()
 
 
 def run_open_stv(vote_id,seats):
@@ -72,6 +69,13 @@ def run_open_stv(vote_id,seats):
     logger.info(electionCounter.winners)
     vote.refresh_from_db()
     vote.state = Vote.CLOSED
+    winners = []
+    losers = []
+    for w in electionCounter.winners:
+        winners.append(ballots.names[w])
+    for l in electionCounter.losers:
+        losers.append(ballots.names[l])
+    vote.description = "Winners: {} \nLosers:{}".format(winners, losers)
     vote.save()
 
 
