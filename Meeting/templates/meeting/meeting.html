@@ -18,7 +18,7 @@
             <td><a href="{% url 'meeting/manage_vote' meeting.id vote.id%}">{{vote.name}}</a></td>
         <td>{{vote.get_state_display}}</td>
         <td>{% vote_action_button vote %}</td>
-        <td>{# TODO(remove vote button if vote is in ready state otherwise number of responses)   #}</td>
+        <td>{% vote_responses_or_remove vote csrf_token %}</td>
         </tr>
     {% endfor %}
 </table>

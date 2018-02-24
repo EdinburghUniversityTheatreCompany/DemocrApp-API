@@ -1,4 +1,5 @@
 from django import template
+from django.template import context
 from django.urls import reverse
 from django.utils.html import format_html
 from ..models import Vote
@@ -23,6 +24,20 @@ def vote_action_button(vote):
         Vote.CLOSED: "Closed",
     }
     return format_html(cases[vote.state])
+
+
+@register.simple_tag(name="vote_responses_or_remove")
+def vote_responses_or_remove(vote, token):
+    if vote.state == Vote.READY:
+        return format_html("""<form action='{}' method='POST'>
+        <input type='hidden' name='csrfmiddlewaretoken' value='{}' />
+        <input type='hidden' name='_method' value='DELETE'>
+        <input type='submit' value='delete'>
+        </form>""",
+            reverse('meeting/manage_vote', args=[vote.token_set.meeting_id, vote.id]),
+            token)
+    else:
+        return vote.responses()
 
 
 @register.simple_tag(name="option_remove_button")
