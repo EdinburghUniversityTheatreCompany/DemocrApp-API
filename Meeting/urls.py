@@ -9,5 +9,8 @@ urlpatterns = [
     path('<int:meeting_id>/<int:vote_id>/close_vote', views.close_vote, name='meeting/close_vote'),
     path('<int:meeting_id>/<int:vote_id>/break_tie', views.break_tie, name='meeting/break_tie'),
     path('manage/<int:meeting_id>', views.manage_meeting, name='meeting/manage'),
-    path('<int:meeting_id>/announcement', views.announcement, name='meeting/announcement')
+    path('manage/<int:meeting_id>/<int:vote_id>', views.manage_vote, name='meeting/manage_vote'),
+    path('<int:meeting_id>/announcement', views.announcement, name='meeting/announcement'),
+    path('manage/<int:meeting_id>/<int:vote_id>/add_option', views.add_option, name='meeting/add_vote_option'),
+    path('manage/<int:meeting_id>/<int:vote_id>/remove_option', views.remove_option, name='meeting/remove_vote_option'),
 ]

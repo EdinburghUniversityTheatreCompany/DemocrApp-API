@@ -87,6 +87,10 @@ class Vote(models.Model):
     )
     state = models.CharField(max_length=2, default=READY, choices=states)
 
+
+    def responses(self):
+        return BallotEntry.objects.filter(option__vote=self).values('token').distinct().count()
+
     def save(self, *args, **kwargs):
         if self._state.adding and self.method == self.YES_NO_ABS:
             super(Vote, self).save(args, kwargs)

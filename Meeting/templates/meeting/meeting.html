@@ -14,7 +14,7 @@
     </tr>
     {% for vote in votes %}
         <tr>
-        <td>{{vote.name}}</td>
+            <td><a href="{% url 'meeting/manage_vote' meeting.id vote.id%}">{{vote.name}}</a></td>
         <td>{{vote.get_state_display}}</td>
         <td>{% vote_action_button vote %}</td>
         </tr>

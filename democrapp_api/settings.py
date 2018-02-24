@@ -51,6 +51,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CSRF_USE_SESSIONS = True
+
 ROOT_URLCONF = 'democrapp_api.urls'
 
 TEMPLATES = [

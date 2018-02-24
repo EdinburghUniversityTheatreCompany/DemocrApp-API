@@ -1,0 +1,66 @@
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js">
+</script>
+{% csrf_token %}
+<h1>{{ vote.name }}</h1>
+{{ vote.description }}
+<ul id="option_list">
+    {% for option in vote.option_set.all %}
+        <li id="{{ option.id }}">{{ option.name }} <button type="button" onclick="remove_option({{ option.id }})">remove</button></li>
+    {% endfor %}
+</ul>
+{% if vote.method != vote.YES_NO_ABS %}
+    <input type="text" id="additional_option_textbox">
+    <button type="button" id="additional_option_submit" onclick="add_option()">add</button>
+{% endif %}
+<script>
+    var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
+    function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+    function add_option() {
+        var new_option = $('#additional_option_textbox').val();
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+        $.ajax({
+            type:'POST',
+            url: '{% url 'meeting/add_vote_option' meeting.id vote.id %}',
+            data: {
+              'name': new_option
+            },
+            dataType: 'json',
+            success: function (data) {
+              if (data.result == "success") {
+                $('#option_list').append("<li id='" + data.id +"'>"+new_option+ "<button type='button' onclick='remove_option("+ data.id +")'>remove</button></li>")
+              }
+            }
+        });
+    };
+    function remove_option(target) {
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+        $.ajax({
+            type:'POST',
+            url: '{% url 'meeting/remove_vote_option' meeting.id vote.id %}',
+            data: {
+              'id': target
+            },
+            dataType: 'json',
+            success: function (data) {
+              if (data.result == "success") {
+                $('#'+target).remove()
+              }
+            }
+        });
+    };
+</script>

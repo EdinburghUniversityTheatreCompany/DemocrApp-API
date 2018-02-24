@@ -6,3 +6,5 @@ from .close_vote import close_vote
 from .break_tie import break_tie
 from .manage_meeting import manage_meeting
 from .announcement import announcement
+from .manage_vote import manage_vote
+from .manage_options import add_option, remove_option
