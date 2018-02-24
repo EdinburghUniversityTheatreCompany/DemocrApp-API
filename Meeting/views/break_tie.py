@@ -2,8 +2,10 @@ from django.contrib.auth.decorators import permission_required, login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from ..models import Meeting, Vote, Tie
+from django.views.decorators.csrf import csrf_exempt
 
 
+@csrf_exempt
 @login_required(login_url='/admin/login')
 @permission_required('meeting.can_create')
 def break_tie(request, meeting_id, vote_id):
@@ -34,4 +36,5 @@ def break_tie(request, meeting_id, vote_id):
             vote.save()
             return JsonResponse({'type': 'success'})
     else:
-        return JsonResponse({"error": "designated stalemate associate un needed"})
+        return JsonResponse({"type": "error",
+                            "error": "designated stalemate associate un needed"})

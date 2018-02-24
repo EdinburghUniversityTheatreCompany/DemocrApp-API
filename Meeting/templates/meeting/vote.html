@@ -1,3 +1,4 @@
+{% load vote_helpers %}
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js">
 </script>
 {% csrf_token %}
@@ -5,7 +6,7 @@
 {{ vote.description }}
 <ul id="option_list">
     {% for option in vote.option_set.all %}
-        <li id="{{ option.id }}">{{ option.name }} <button type="button" onclick="remove_option({{ option.id }})">remove</button></li>
+        <li id="{{ option.id }}">{{ option.name }} {% option_remove_button option %}</li>
     {% endfor %}
 </ul>
 {% if vote.method != vote.YES_NO_ABS %}
