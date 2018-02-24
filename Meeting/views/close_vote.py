@@ -3,8 +3,10 @@ import _thread
 from asgiref.sync import async_to_sync, sync_to_async
 from channels.layers import get_channel_layer
 from django.contrib.auth.decorators import permission_required, login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
+
 from ..models import Meeting, Vote
 from threading import Thread
 from django.views.decorators.csrf import csrf_exempt
@@ -36,7 +38,7 @@ def close_vote(request, meeting_id, vote_id):
     async_to_sync(channel_layer.group_send)("broadcast", {"type": "vote.closing",
                                                           "vote_id": vote_id})
     message = {'type': 'success'}
-    return JsonResponse(message)
+    return HttpResponseRedirect(reverse('meeting/manage', args=[meeting.id]))
 
 
 def yes_no_abs(vote):
