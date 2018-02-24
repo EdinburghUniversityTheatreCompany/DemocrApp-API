@@ -9,7 +9,7 @@
         <li id="{{ option.id }}">{{ option.name }} {% option_remove_button option %}</li>
     {% endfor %}
 </ul>
-{% if vote.method != vote.YES_NO_ABS %}
+{% if vote.method != vote.YES_NO_ABS and vote.state == vote.READY %}
     <input type="text" id="additional_option_textbox">
     <button type="button" id="additional_option_submit" onclick="add_option()">add</button>
 {% endif %}
