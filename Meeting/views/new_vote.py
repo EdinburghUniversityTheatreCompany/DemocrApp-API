@@ -1,6 +1,8 @@
 from django.contrib.auth.decorators import permission_required, login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
+from ..form import VoteForm
 from ..models import Meeting, Vote
 
 
@@ -9,11 +11,14 @@ from ..models import Meeting, Vote
 def new_vote(request, meeting_id):
     meeting = get_object_or_404(Meeting, pk=meeting_id)
     token_sets = meeting.tokenset_set.order_by('created_at').all()
-    name = request.POST['name']
-    description = request.POST['description']
-    method = request.POST['method_code']
-    if method in Vote.methods:
-        return JsonResponse({"error": "bad method code"})
-    vote = Vote(name=name, description=description, method=method, token_set=token_sets.latest())
-    vote.save()
-    return JsonResponse({"type": "success", "vote_id": vote.id})
+    if request.method == 'POST':
+        form = VoteForm(request.POST)
+        if form.is_valid():
+            data = form.data
+            vote = Vote(name=data['name'],
+                        description=data['description'],
+                        method=data['method'],
+                        token_set=token_sets.latest())
+            vote.save()
+            pass
+    return HttpResponseRedirect(reverse('meeting/manage', args=[meeting_id]))
