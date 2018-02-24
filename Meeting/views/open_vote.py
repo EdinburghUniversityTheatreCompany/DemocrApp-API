@@ -1,8 +1,10 @@
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.contrib.auth.decorators import login_required, permission_required
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
+
 from ..models import Meeting, Vote
 
 
@@ -25,4 +27,4 @@ def open_vote(request, meeting_id, vote_id):
         "type": "success"
     }
 
-    return JsonResponse(message)
+    return HttpResponseRedirect(reverse('meeting/manage', args=[meeting.id]))
