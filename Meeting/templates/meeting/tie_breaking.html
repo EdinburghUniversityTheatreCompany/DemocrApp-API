@@ -1,0 +1,5 @@
+<ul>
+{% for option in options %}
+    <li>{{option.option.name}}<form method="POST">{% csrf_token %}<input type='hidden' name='winner_id' value='{{ option.option_id }}'><input type="submit" value="Eliminate"></form></li>
+{% endfor %}
+</ul>

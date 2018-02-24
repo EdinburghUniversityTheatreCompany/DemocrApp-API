@@ -1,6 +1,8 @@
 from django.contrib.auth.decorators import permission_required, login_required
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
+from django.http import JsonResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
+
 from ..models import Meeting, Vote, Tie
 from django.views.decorators.csrf import csrf_exempt
 
@@ -24,7 +26,8 @@ def break_tie(request, meeting_id, vote_id):
             message = {"type": "tied_options",
                        "options": options,
                        }
-            return JsonResponse(message)
+            context = {"options": vote.tie_set.all()}
+            return render(request, 'meeting/tie_breaking.html', context)
         elif request.method == "POST":
             winner = request.POST['winner_id']
             if not Tie.objects.filter(vote=vote, option_id=winner).exists():
@@ -34,7 +37,7 @@ def break_tie(request, meeting_id, vote_id):
                 tie.delete()
             vote.state = vote.COUNTING
             vote.save()
-            return JsonResponse({'type': 'success'})
+            return HttpResponseRedirect(reverse('meeting/manage', args=[meeting_id]))
     else:
         return JsonResponse({"type": "error",
                             "error": "designated stalemate associate un needed"})
