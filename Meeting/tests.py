@@ -44,7 +44,7 @@ class ManagementInterfaceCases(BaseTestCase):
         self.assertEqual(v.token_set, self.ts)
         self.assertListEqual(list(v.option_set.all().values_list('name', flat=True)), ['abs', 'no', 'yes'])
 
-    def test_create_yna_vote(self):
+    def test_create_stv_vote(self):
         x = Vote.objects.count()
         result = self.client.post(reverse('meeting/new_vote', args=[self.m.id]), {'name': 'name',
                         'description':'description',
@@ -58,13 +58,16 @@ class ManagementInterfaceCases(BaseTestCase):
         self.assertEqual(v.token_set, self.ts)
         self.assertEqual(v.option_set.count(), 0)
 
-    def test_add_vote_option(self):
+    def test_add_vote_option_YNA(self):
         v = Vote(name='name', token_set=self.ts, method=Vote.YES_NO_ABS)
         v.save()
         request_args = [reverse('meeting/add_vote_option', args=[self.m.id, v.id]),
                         {'name': 'name'}]
         result = self.client.post(*request_args)
         self.assertJSONEqual(result.content, json.dumps({'result': 'failure'}))
+        self.assertEqual(3, v.option_set.count())
+
+    def test_add_vote_option_non_ready_state(self):
         cant_add_option_states = [x[0] for x in Vote.states]
         cant_add_option_states.remove(Vote.READY)
         for s in cant_add_option_states:
@@ -74,6 +77,9 @@ class ManagementInterfaceCases(BaseTestCase):
                             {'name': 'name'}]
             result = self.client.post(*request_args)
             self.assertJSONEqual(result.content, json.dumps({'result': 'failure'}))
+            self.assertEqual(0, v.option_set.count())
+
+    def test_add_vote_option_predicted_success(self):
         v = Vote(name='name', token_set=self.ts, method=Vote.STV)
         v.save()
         request_args = [reverse('meeting/add_vote_option', args=[self.m.id, v.id]),
@@ -81,6 +87,42 @@ class ManagementInterfaceCases(BaseTestCase):
         result = self.client.post(*request_args)
         self.assertJSONEqual(result.content, json.dumps({'result': 'success',
                                                          'id': v.option_set.first().id}))
+        self.assertEqual(1, v.option_set.count())
+
+    def test_remove_vote_option_YNA(self):
+        v = Vote(name='name', token_set=self.ts, method=Vote.YES_NO_ABS)
+        v.save()
+        request_args = [reverse('meeting/remove_vote_option', args=[self.m.id, v.id]),
+                        {'id': v.id}]
+        result = self.client.post(*request_args)
+        self.assertJSONEqual(result.content, json.dumps({'result': 'failure'}))
+        self.assertEqual(3, v.option_set.count())
+
+    def test_remove_vote_option_non_ready_state(self):
+        cant_add_option_states = [x[0] for x in Vote.states]
+        cant_add_option_states.remove(Vote.READY)
+        for s in cant_add_option_states:
+            v = Vote(name='name', token_set=self.ts, method=Vote.STV, state=s)
+            v.save()
+            Option(name='name', vote=v).save()
+            self.assertEqual(1, v.option_set.count())
+            request_args = [reverse('meeting/remove_vote_option', args=[self.m.id, v.id]),
+                            {'id': v.option_set.first().id}]
+            result = self.client.post(*request_args)
+            self.assertJSONEqual(result.content, json.dumps({'result': 'failure'}))
+            self.assertEqual(1, v.option_set.count())
+
+    def test_remove_vote_option_predicted_success(self):
+        v = Vote(name='name', token_set=self.ts, method=Vote.STV)
+        v.save()
+        Option(name='name', vote=v).save()
+        self.assertEqual(1, v.option_set.count())
+        request_args = [reverse('meeting/remove_vote_option', args=[self.m.id, v.id]),
+                        {'id': v.option_set.first().id}]
+        result = self.client.post(*request_args)
+        self.assertJSONEqual(result.content, json.dumps({'result': 'success'}))
+        self.assertEqual(0, v.option_set.count())
+
 
 
 class TallyingYNACases(TestCase):
