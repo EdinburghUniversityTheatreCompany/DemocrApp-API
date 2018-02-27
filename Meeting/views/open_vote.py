@@ -13,7 +13,7 @@ from ..models import Meeting, Vote
 def open_vote(request, meeting_id, vote_id):
     meeting = get_object_or_404(Meeting, pk=meeting_id)
     vote = get_object_or_404(Vote, pk=vote_id)
-    if vote.token_set.meeting != meeting or vote.state != vote.READY:
+    if vote.token_set.meeting != meeting or vote.state != vote.READY or vote.option_set.count() < 2:
         return JsonResponse({'error': 'meeting vote mismatch'}, status=401)
 
     vote.state = vote.LIVE
