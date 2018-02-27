@@ -24,7 +24,7 @@ def yes_no_abs_count(vote_id):
     return counts.values()
 
 
-def run_open_stv(vote_id,seats):
+def run_open_stv(vote_id, seats):
     ballots = Ballots()
     vote = Vote.objects.get(pk=vote_id)
 
@@ -35,7 +35,7 @@ def run_open_stv(vote_id,seats):
         option_translation[option.id] = index
         names.append(option.name)
     ballots.setNames(names)
-    ballots.numSeats = seats  # TODO(Decide on method of storing number of seats available)
+    ballots.numSeats = int(seats)  # TODO(Decide on method of storing number of seats available)
 
     voter = -1
     ballot = []
