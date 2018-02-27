@@ -1,5 +1,4 @@
 from django.contrib.auth.models import User
-from django.core.serializers import json
 from django.test import TestCase, Client, TransactionTestCase
 from django.urls import reverse
 import json
