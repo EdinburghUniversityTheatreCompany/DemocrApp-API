@@ -160,15 +160,3 @@ class ManagementInterfaceCases(BaseTestCase):
         v.refresh_from_db()
         # TODO(check broadcast to UI)
         self.assertIn(v.state, [v.COUNTING, v.NEEDS_TIE_BREAKER, v.CLOSED])
-
-
-
-class TallyingYNACases(TestCase):
-    def setUp(self):
-        pass
-
-
-
-class TallyingSTVCases(TestCase):
-    def setUp(self):
-        pass
