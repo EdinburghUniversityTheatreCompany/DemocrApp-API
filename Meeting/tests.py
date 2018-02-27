@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.core.serializers import json
-from django.test import TestCase, Client
+from django.test import TestCase, Client, TransactionTestCase
 from django.urls import reverse
 import json
 
@@ -11,7 +11,7 @@ from Meeting.models import *
 
 class BaseTestCase(TestCase):
     def setUp(self):
-        super(TestCase, self).setUp()
+        super(BaseTestCase, self).setUp()
         self.client = Client()
         self.m = Meeting()
         self.m.save()
@@ -122,6 +122,44 @@ class ManagementInterfaceCases(BaseTestCase):
         result = self.client.post(*request_args)
         self.assertJSONEqual(result.content, json.dumps({'result': 'success'}))
         self.assertEqual(0, v.option_set.count())
+
+    def test_open_vote(self):
+        v = Vote(name='name', token_set=self.ts, method=Vote.STV)
+        v.save()
+        request_url = reverse('meeting/open_vote', args=[self.m.id, v.id])
+        for x in range(0, 2):
+            result = self.client.get(request_url)
+            v.refresh_from_db()
+            self.assertJSONEqual(result.content, json.dumps({'result': 'failure'}))
+            self.assertEqual(v.state, v.READY)
+            o = Option(name=str(x), vote=v)
+            o.save()
+        result = self.client.get(request_url)
+        v.refresh_from_db()
+        self.assertEqual(v.LIVE, v.state)
+        # TODO(check broadcast to ui)
+
+    def test_close_vote(self):
+        v = Vote(name='name', token_set=self.ts, method=Vote.YES_NO_ABS)
+        v.save()
+        self.assertEqual(3, v.option_set.count())
+        non_live_states = [x[0] for x in Vote.states]
+        non_live_states.remove(Vote.LIVE)
+        request_args = [reverse('meeting/close_vote', args=[self.m.id, v.id]),
+                        {'num_seats': 2}]
+        for s in non_live_states:
+            v.state = s
+            v.save()
+            result = self.client.post(*request_args)
+            self.assertJSONEqual(result.content, json.dumps({'result': 'failure'}))
+            v.refresh_from_db()
+            self.assertEqual(s, v.state)
+        v.state = v.LIVE
+        v.save()
+        result = self.client.post(*request_args)
+        v.refresh_from_db()
+        # TODO(check broadcast to UI)
+        self.assertIn(v.state, [v.COUNTING, v.NEEDS_TIE_BREAKER, v.CLOSED])
 
 
 
