@@ -8,9 +8,8 @@ from django.views.decorators.csrf import csrf_exempt
 from ..models import Meeting
 
 
-#@login_required(login_url='/admin/login')
-#@permission_required('meeting.can_create')
-@csrf_exempt
+@login_required(login_url='/admin/login')
+@permission_required('meeting.can_create')
 def announcement(request, meeting_id):
     meeting = get_object_or_404(Meeting, pk=meeting_id)
     if not meeting.open():

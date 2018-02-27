@@ -7,7 +7,6 @@ from ..models import Meeting, Vote, Tie
 from django.views.decorators.csrf import csrf_exempt
 
 
-@csrf_exempt
 @login_required(login_url='/admin/login')
 @permission_required('meeting.can_create')
 def break_tie(request, meeting_id, vote_id):

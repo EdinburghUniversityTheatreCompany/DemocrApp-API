@@ -12,7 +12,6 @@ from threading import Thread
 from django.views.decorators.csrf import csrf_exempt
 
 
-@csrf_exempt
 @login_required(login_url='/admin/login')
 @permission_required('meeting.can_create')
 def close_vote(request, meeting_id, vote_id):
