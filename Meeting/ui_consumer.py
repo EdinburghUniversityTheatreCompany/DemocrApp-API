@@ -4,7 +4,8 @@ from .models import *
 
 
 class UIConsumer(JsonWebsocketConsumer):
-    auth_token = None
+    session = None
+    voter_tokens = []
 
     def websocket_connect(self, message):
         self.accept()
@@ -31,11 +32,11 @@ class UIConsumer(JsonWebsocketConsumer):
                 self.session.save()
                 auth_token = self.session.auth_token
                 if auth_token.token_set.valid():
-                    self.vote_token = auth_token.votertoken_set.filter(proxy=False).first()
-                    voters = [{"token": self.vote_token.id, "type": "primary"}]
+                    self.voter_tokens.append(auth_token.votertoken_set.filter(proxy=False).id)
+                    voters = [{"token": self.voter_tokens[0], "type": "primary"}]
                     if auth_token.has_proxy:
-                        self.proxy_token = auth_token.votertoken_set.filter(proxy=True).first()
-                        voters.append({"token": self.proxy_token.id, "type": "proxy"})
+                        self.voter_tokens.append(auth_token.votertoken_set.filter(proxy=True).id)
+                        voters.append({"token": self.voter_tokens[1], "type": "proxy"})
                     reply = {"type": "auth_response",
                             "result": "success",
                             "voters": voters,
@@ -63,7 +64,7 @@ class UIConsumer(JsonWebsocketConsumer):
             for voter in message['votes'].items():
                 voter_id = int(voter[0])
                 ballot_entries = voter[1]
-                if voter_id in [self.proxy_token.id, self.vote_token.id]:
+                if voter_id in self.voter_tokens:
                     BallotEntry.objects.filter(token_id=voter, option__vote=vote).delete()
                     tokens.append(voter_id)
                     for ballot_entry in ballot_entries.items():
@@ -106,6 +107,7 @@ class UIConsumer(JsonWebsocketConsumer):
             "method": vote.method,
             "options": options,
             "proxies": True,
+            "existing_ballots": BallotEntry.objects.filter(vote=vote, token_id__in=self.voter_tokens).exists(),
         }
         self.send_json(message)
 
