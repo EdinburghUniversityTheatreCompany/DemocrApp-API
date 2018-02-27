@@ -1,12 +1,13 @@
+from django.utils import timezone
 from django.db import models
 import uuid
 import random
 
 
 class Meeting(models.Model):
-    time = models.DateTimeField
+    time = models.DateTimeField(default=timezone.now)
     name = models.TextField(default='')
-    close_time = models.DateTimeField(null=True)
+    close_time = models.DateTimeField(default=None, null=True)
 
     def open(self):
         return self.close_time is None
@@ -108,8 +109,8 @@ class Option(models.Model):
     class Meta:
         unique_together = (('vote', 'name'),)
     vote = models.ForeignKey(Vote, on_delete=models.CASCADE)
-    name = models.TextField(default='')
-    link = models.URLField
+    name = models.CharField(max_length=100, default='')
+    link = models.URLField(null=True)
 
     def __str__(self):
         return "vote {}: {}".format(self.vote.name, self.name)
