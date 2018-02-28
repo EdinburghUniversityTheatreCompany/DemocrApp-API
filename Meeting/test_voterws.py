@@ -43,6 +43,8 @@ class TestUiDatabaseTransactions:
 
     def test_setup(self):
         assert self.m in Meeting.objects.all()
+        assert self.ts in self.m.tokenset_set.all()
+        assert self.old_ts in self.m.tokenset_set.all()
 
     @pytest.mark.asyncio
     async def test_authenticate_single(self):
@@ -73,3 +75,43 @@ class TestUiDatabaseTransactions:
         poxy_dict_list = [voter for voter in response['voters'] if voter['token'] == proxy]
         assert poxy_dict_list  # checks the list has an entry
         assert "proxy" == poxy_dict_list[0]['type']
+
+    @pytest.mark.asyncio
+    async def test_authenticate_with_open_votes(self):
+        v = Vote(name='y n a test', token_set=self.ts, method=Vote.YES_NO_ABS, state=Vote.LIVE)
+        v.save()
+        v = Vote(token_set=self.ts, method=Vote.STV, state=Vote.LIVE)
+        v.save()
+        for x in range(0, 5):
+            Option(name=x, vote=v).save()
+        session, communicator = await self.authenticate(False)
+        await communicator.send_json_to({'type': 'auth_request',
+                                         'session_token': str(session.id)})
+        response = await communicator.receive_json_from()  # binning the auth response
+        v_set = Vote.objects.filter(state=Vote.LIVE, token_set=self.ts)
+        vote_count = 0
+        vote_ids = []
+        for v in v_set.all():
+            response = await communicator.receive_json_from()
+            while response['type'] == 'auth_response':
+                response = await communicator.receive_json_from(timeout=100000000)
+            assert 'ballot' == response['type']
+            assert response['ballot_id']
+            vote = v_set.filter(id=response['ballot_id']).first()
+            assert vote
+            assert vote in v_set.all()
+            assert vote.id not in vote_ids
+            vote_ids.append(vote.id)
+            assert vote.name == response['title']
+            assert vote.description == response['desc']
+            assert vote.method == response['method']
+            options = response['options']
+            assert vote.option_set.count() == len(options)
+            for o in vote.option_set.all():
+                op = [op for op in options if op['id'] == o.id]
+                assert op
+                assert o.name == op[0]['name']
+            assert response['proxies']
+            assert not response['existing_ballots']
+            vote_count += 1
+        assert v_set.count() == vote_count
