@@ -16,11 +16,15 @@ class UIConsumer(JsonWebsocketConsumer):
         self.close()
 
     def receive_json(self, message, **kwargs):
-        options = {
-            'auth_request': self.authenticate,
-            'ballot_form': self.process_votes
-        }
-        options.get(message['type'], self.bad_message)(message)
+        if 'type' in message.keys():
+            options = {
+                'auth_request': self.authenticate,
+                'ballot_form': self.process_votes
+            }
+            options.get(message['type'], self.bad_message)(message)
+        else:
+            self.bad_message(message)
+
 
     def authenticate(self, message):
         key = message['session_token']
@@ -136,4 +140,4 @@ class UIConsumer(JsonWebsocketConsumer):
         self.session.delete()
 
     def bad_message(self, content):
-        pass
+        self.send_json({"type": "Bad Message"})
