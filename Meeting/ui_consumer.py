@@ -27,7 +27,6 @@ class UIConsumer(JsonWebsocketConsumer):
         else:
             self.bad_message(message)
 
-
     def authenticate(self, message):
         key = message['session_token']
         try:
@@ -38,6 +37,7 @@ class UIConsumer(JsonWebsocketConsumer):
                 self.session.save()
                 auth_token = self.session.auth_token
                 if auth_token.token_set.valid():
+                    self.voter_tokens = []
                     self.voter_tokens.append(auth_token.votertoken_set.filter(proxy=False).first().id)
                     voters = [{"token": self.voter_tokens[0], "type": "primary"}]
                     if auth_token.has_proxy:
