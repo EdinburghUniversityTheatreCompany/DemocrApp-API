@@ -1,5 +1,8 @@
-import json
 import pytest
+from channels.layers import get_channel_layer
+from django.contrib.auth.models import User
+from django.test import Client
+
 from Meeting.models import *
 from channels.testing import WebsocketCommunicator
 from .ui_consumer import UIConsumer
@@ -30,6 +33,12 @@ class TestUiDatabaseTransactions:
         self.old_ts.save()
         self.ts = TokenSet(meeting=self.m)
         self.ts.save()
+        self.admin = User()
+        self.admin.is_superuser = True
+        self.admin.save()
+        self.client = Client()
+        self.client.force_login(self.admin)
+
 
     async def authenticate(self, proxy):
         at = AuthToken(token_set=self.ts, has_proxy=proxy)
@@ -77,6 +86,27 @@ class TestUiDatabaseTransactions:
         assert "proxy" == poxy_dict_list[0]['type']
 
     @pytest.mark.asyncio
+    async def test_authenticate_votes_are_dispatched_as_they_are_opened(self):
+        # TODO(Figure out why this only passes if run on its own)
+        v1 = Vote(name='y n a test', token_set=self.ts, method=Vote.YES_NO_ABS, state=Vote.READY)
+        v1.save()
+        v2 = Vote(token_set=self.ts, method=Vote.STV, state=Vote.READY)
+        v2.save()
+        for x in range(0, 5):
+            Option(name=x, vote=v2).save()
+        session, communicator = await self.authenticate(False)
+        await communicator.send_json_to({'type': 'auth_request',
+                                         'session_token': str(session.id)})
+        response = await communicator.receive_json_from()  # binning the auth response
+        channel_layer = get_channel_layer()
+        await channel_layer.group_send("broadcast", {"type": "vote.opening",
+                                                              "vote_id": v1.id})
+        await self.check_votes(Vote.objects.filter(pk=v1.id), communicator)
+        await channel_layer.group_send("broadcast", {"type": "vote.opening",
+                                                              "vote_id": v2.id})
+        await self.check_votes(Vote.objects.filter(pk=v2.id), communicator)
+
+    @pytest.mark.asyncio
     async def test_authenticate_with_open_votes(self):
         v = Vote(name='y n a test', token_set=self.ts, method=Vote.YES_NO_ABS, state=Vote.LIVE)
         v.save()
@@ -95,9 +125,9 @@ class TestUiDatabaseTransactions:
         vote_count = 0
         vote_ids = []
         for v in v_set.all():
-            response = await communicator.receive_json_from()
+            response = await communicator.receive_json_from(2)
             while response['type'] == 'auth_response':
-                response = await communicator.receive_json_from(timeout=100000000)
+                response = await communicator.receive_json_from(timeout=10)
             assert 'ballot' == response['type']
             assert response['ballot_id']
             vote = v_set.filter(id=response['ballot_id']).first()
