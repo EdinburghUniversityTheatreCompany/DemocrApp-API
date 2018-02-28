@@ -88,7 +88,10 @@ class TestUiDatabaseTransactions:
         await communicator.send_json_to({'type': 'auth_request',
                                          'session_token': str(session.id)})
         response = await communicator.receive_json_from()  # binning the auth response
-        v_set = Vote.objects.filter(state=Vote.LIVE, token_set=self.ts)
+        await self.check_votes(Vote.objects.filter(state=Vote.LIVE, token_set=self.ts), communicator)
+
+    async def check_votes(self, expected_votes, communicator):
+        v_set = expected_votes
         vote_count = 0
         vote_ids = []
         for v in v_set.all():
