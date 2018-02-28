@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
 from .models import *
@@ -29,17 +31,17 @@ class UIConsumer(JsonWebsocketConsumer):
     def authenticate(self, message):
         key = message['session_token']
         try:
-            self.session = Session.objects.filter(pk=key).first()
+            self.session = Session.objects.filter(pk=UUID(key)).first()
             if self.session is not None:
                 self.boot_others()
                 self.session.channel = self.channel_name
                 self.session.save()
                 auth_token = self.session.auth_token
                 if auth_token.token_set.valid():
-                    self.voter_tokens.append(auth_token.votertoken_set.filter(proxy=False).id)
+                    self.voter_tokens.append(auth_token.votertoken_set.filter(proxy=False).first().id)
                     voters = [{"token": self.voter_tokens[0], "type": "primary"}]
                     if auth_token.has_proxy:
-                        self.voter_tokens.append(auth_token.votertoken_set.filter(proxy=True).id)
+                        self.voter_tokens.append(auth_token.votertoken_set.filter(proxy=True).first().id)
                         voters.append({"token": self.voter_tokens[1], "type": "proxy"})
                     reply = {"type": "auth_response",
                             "result": "success",
