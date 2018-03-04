@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
 from .models import *
@@ -16,26 +18,30 @@ class UIConsumer(JsonWebsocketConsumer):
         self.close()
 
     def receive_json(self, message, **kwargs):
-        options = {
-            'auth_request': self.authenticate,
-            'ballot_form': self.process_votes
-        }
-        options.get(message['type'], self.bad_message)(message)
+        if 'type' in message.keys():
+            options = {
+                'auth_request': self.authenticate,
+                'ballot_form': self.process_votes
+            }
+            options.get(message['type'], self.bad_message)(message)
+        else:
+            self.bad_message(message)
 
     def authenticate(self, message):
         key = message['session_token']
         try:
-            self.session = Session.objects.filter(pk=key).first()
+            self.session = Session.objects.filter(pk=UUID(key)).first()
             if self.session is not None:
                 self.boot_others()
                 self.session.channel = self.channel_name
                 self.session.save()
                 auth_token = self.session.auth_token
                 if auth_token.token_set.valid():
-                    self.voter_tokens.append(auth_token.votertoken_set.filter(proxy=False).id)
+                    self.voter_tokens = []
+                    self.voter_tokens.append(auth_token.votertoken_set.filter(proxy=False).first().id)
                     voters = [{"token": self.voter_tokens[0], "type": "primary"}]
                     if auth_token.has_proxy:
-                        self.voter_tokens.append(auth_token.votertoken_set.filter(proxy=True).id)
+                        self.voter_tokens.append(auth_token.votertoken_set.filter(proxy=True).first().id)
                         voters.append({"token": self.voter_tokens[1], "type": "proxy"})
                     reply = {"type": "auth_response",
                             "result": "success",
@@ -107,7 +113,7 @@ class UIConsumer(JsonWebsocketConsumer):
             "method": vote.method,
             "options": options,
             "proxies": True,
-            "existing_ballots": BallotEntry.objects.filter(vote=vote, token_id__in=self.voter_tokens).exists(),
+            "existing_ballots": BallotEntry.objects.filter(option__vote=vote, token_id__in=self.voter_tokens).exists(),
         }
         self.send_json(message)
 
@@ -136,4 +142,4 @@ class UIConsumer(JsonWebsocketConsumer):
         self.session.delete()
 
     def bad_message(self, content):
-        pass
+        self.send_json({"type": "Bad Message"})
