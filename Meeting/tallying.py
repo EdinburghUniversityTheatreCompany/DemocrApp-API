@@ -3,6 +3,7 @@ from threading import Thread
 from .models import Vote, BallotEntry, Option, Tie
 from openstv.ballots import Ballots
 from openstv.MethodPlugins.ScottishSTV import ScottishSTV
+from openstv.ReportPlugins.YamlReport import YamlReport
 from time import sleep
 import logging
 logger = logging.getLogger(__name__)
@@ -76,6 +77,13 @@ def run_open_stv(vote_id, seats):
     for l in electionCounter.losers:
         losers.append(ballots.names[l])
     vote.description = "Winners: {} \nLosers:{}".format(winners, losers)
+    r = YamlReport(electionCounter, outputToString=True)
+    r.generateReport()
+    report = "\n"
+    for index, name in enumerate(ballots.names):
+        report += "[{}] -> {}\n".format(index, name)
+    report += r.outputFile
+    vote.description += report
     vote.save()
 
 

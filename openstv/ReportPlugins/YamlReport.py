@@ -20,11 +20,11 @@ class YamlReport(ReportPlugin):
   status = 0
   reportName = "YAML"
   
-  def __init__(self, e, outputFile=None, test=False):
-    ReportPlugin.__init__(self, e, outputFile, test)
+  def __init__(self, e, outputFile=None, test=False,outputToString=False):
+    ReportPlugin.__init__(self, e, outputFile, test, outputToString)
     
     if self.e.methodName == "Condorcet":
-      raise RuntimeError, "YAML report not available for Condorcet elections."
+      raise(RuntimeError, "YAML report not available for Condorcet elections.")
 
   def generateHeader(self):
     winners = list(self.e.winners)
