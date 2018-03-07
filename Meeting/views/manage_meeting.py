@@ -6,7 +6,7 @@ from Meeting.form import VoteForm
 from ..models import Meeting, Vote, AuthToken
 
 
-@login_required(login_url='/admin/login')
+@login_required(login_url='/api/admin/login')
 @permission_required('meeting.can_create')
 def manage_meeting(request, meeting_id):
     context = {}

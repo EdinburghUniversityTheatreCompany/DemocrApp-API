@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 
 from ..models import Meeting, Vote, Option
 
-@login_required(login_url='/admin/login')
+@login_required(login_url='/api/admin/login')
 @permission_required('meeting.can_create')
 def add_option(request, meeting_id, vote_id):
     meeting = get_object_or_404(Meeting, pk=meeting_id)
@@ -16,7 +16,7 @@ def add_option(request, meeting_id, vote_id):
     return JsonResponse({"result": "success",
                          "id": o.id, })
 
-@login_required(login_url='/admin/login')
+@login_required(login_url='/api/admin/login')
 @permission_required('meeting.can_create')
 def remove_option(request, meeting_id, vote_id):
     meeting = get_object_or_404(Meeting, pk=meeting_id)

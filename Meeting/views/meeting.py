@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from ..models import Meeting
 
 
-@login_required(login_url='/admin/login')
+@login_required(login_url='/api/admin/login')
 @permission_required('meeting.can_create')
 def meeting(request, meeting_id):
     meeting = get_object_or_404(Meeting, pk=meeting_id)
