@@ -179,19 +179,25 @@ class ReportPlugin(object):
 
   status = 0
   
-  def __init__(self, e, outputFile=None, test=False):
+  def __init__(self, e, outputFile=None, test=False, outputToString=False):
 
     self.e = e
     self.cleanB = self.e.b
     self.dirtyB = self.e.b.dirtyBallots
     if self.dirtyB == None:
       self.dirtyB = self.cleanB
+    self.outputToString = outputToString
+    if outputToString:
+      outputFile = ""
     self.outputFile = outputFile
     self.test = test
 
   def output(self, output):
     """Stream output to destination file-like object."""
-    print >> self.outputFile, output,
+    if self.outputToString:
+      self.outputFile += output
+    else:
+      print(output, end="", file=self.outputFile)
     
   def generateReport(self):
     "Selector for major categories of methods."
