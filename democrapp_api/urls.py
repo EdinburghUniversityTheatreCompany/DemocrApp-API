@@ -15,8 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.views import defaults
 
 urlpatterns = [
+    path('printing_page?t=<int:token_id>&p=<str:has_proxy>', defaults.permission_denied, name='print_token'),
     path('api/admin/', admin.site.urls),
     path('api/',  include('Meeting.urls')),
 ]
