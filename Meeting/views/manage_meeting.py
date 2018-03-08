@@ -16,7 +16,7 @@ def manage_meeting(request, meeting_id):
             proxy = "proxy" in request.POST.keys()
             at = AuthToken(token_set=meeting.tokenset_set.latest(), has_proxy=proxy)
             at.save()
-            return redirect('print_token', token_id=at.id, has_proxy=str(proxy))
+            return redirect('/print.html?t={}&p={}'.format(at.id,proxy))
         else:
             return JsonResponse({"result": "failure", "reason": "unexpected type"})
     else:
