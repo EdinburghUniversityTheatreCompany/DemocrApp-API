@@ -1,4 +1,6 @@
 {% load vote_helpers %}
+<script src="https://democrapp.bedlamtheatre.co.uk/assets/vendor/jquery.min.js">
+</script>
 
 <h1>{{ meeting.name }}</h1>
 <ol>
@@ -34,4 +36,35 @@
     <input type="checkbox" name="proxy"/>
     <input type="submit" value="create token" />
 </form>
-{# TODO(ISSUE TOKEN BUTTON) #}
+<input type="text" id="message_textbox">
+<button type="button" id="announcement_submit" onclick="send_announcement()">add</button>
+<script>
+    var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
+    function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+    function send_announcement() {
+        var message = $('#message_textbox').val();
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+        $.ajax({
+            type:'POST',
+            url: '{% url 'meeting/announcement' meeting.id %}',
+            data: {
+              'message': message
+            },
+            dataType: 'json',
+            success: function (data) {
+              if (data.result == "success") {
+                $('#message_textbox').clear()
+              }
+            }
+        });
+    };
+</script>
