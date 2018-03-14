@@ -8,3 +8,4 @@ from .manage_meeting import manage_meeting
 from .announcement import announcement
 from .manage_vote import manage_vote
 from .manage_options import add_option, remove_option
+from .meeting_list import meeting_list
