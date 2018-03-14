@@ -7,7 +7,7 @@ import random
 class Meeting(models.Model):
     time = models.DateTimeField(default=timezone.now)
     name = models.TextField(default='')
-    close_time = models.DateTimeField(default=None, null=True)
+    close_time = models.DateTimeField(default=None, null=True, blank=True)
 
     def open(self):
         return self.close_time is None
