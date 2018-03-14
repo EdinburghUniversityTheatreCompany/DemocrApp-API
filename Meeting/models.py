@@ -12,6 +12,17 @@ class Meeting(models.Model):
     def open(self):
         return self.close_time is None
 
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            super(Meeting, self).save(args, kwargs)
+            ts = TokenSet(meeting_id=self.pk)
+            ts.save()
+        else:
+            super(Meeting, self).save(args, kwargs)
+
+    def __str__(self):
+        return "{} \t-\t {}".format(self.time.date(), self.name)
+
 
 class TokenSet(models.Model):
     meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE)
