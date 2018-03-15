@@ -11,7 +11,7 @@
     </tr>
     {% for vote in votes %}
         <tr>
-            <td><a href="{% url 'meeting/reports/vote' meeting.id vote.id%}">{{vote.name}}</a></td>
+            <td><a href="{% url 'meeting/report/vote' meeting.id vote.id%}">{{vote.name}}</a></td>
         <td>{{ vote.responses }}</td>
         </tr>
     {% endfor %}
