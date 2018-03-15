@@ -1,0 +1,40 @@
+<h1>{{ vote.name }}</h1>
+{{ vote.description }}
+<table>
+    <tr>
+        <td>id</td>
+        <td>name</td>
+    </tr>
+    {% for o in options %}
+        <tr>
+            <td>{{ o.pk }}</td>
+            <td>{{ o.name }}</td>
+        </tr>
+    {% endfor %}
+</table>
+<table>
+    <tr>
+        <td>option</td>
+        <td>preference</td>
+    </tr>
+    {% for v in votes %}
+        {% for be in v %}
+            <tr>
+                <td>{{ be.option }}</td>
+                <td>{{ be.value }}</td>
+            </tr>
+        {% endfor %}
+        --------------------------------
+    {% endfor %}
+----------Begin Proxies-------------
+    {% for v in proxy_votes %}
+        {% for be in v %}
+            <tr>
+                <td>{{ be.option }}</td>
+                <td>{{ be.value }}</td>
+            </tr>
+        {% endfor %}
+        --------------------------------
+    {% endfor %}
+</table>
+

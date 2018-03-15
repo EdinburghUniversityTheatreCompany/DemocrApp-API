@@ -1,0 +1,19 @@
+<h1>{{ meeting.name }}</h1>
+<ol>
+    {% for t_set in token_sets %}
+        <li>{{ t_set.created_at }}</li>
+    {% endfor %}
+</ol>
+<table>
+    <tr>
+        <td>name</td>
+        <td></td>
+    </tr>
+    {% for vote in votes %}
+        <tr>
+            <td><a href="{% url 'meeting/reports/vote' meeting.id vote.id%}">{{vote.name}}</a></td>
+        <td>{{ vote.responses }}</td>
+        </tr>
+    {% endfor %}
+</table>
+
