@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from ...models import Meeting, Vote, VoterToken
 
 
-def vote_report(request, vote_id):
+def vote_report(request, meeting_id, vote_id):
     context = {}
     vote = get_object_or_404(Vote, pk=vote_id)
     context['vote'] = vote

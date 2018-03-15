@@ -15,6 +15,6 @@ urlpatterns = [
     path('manage/<int:meeting_id>/<int:vote_id>/add_option', views.add_option, name='meeting/add_vote_option'),
     path('manage/<int:meeting_id>/<int:vote_id>/remove_option', views.remove_option, name='meeting/remove_vote_option'),
     path('reports/<int:meeting_id>', reports.meeting_report, name='meeting/report/meeting'),
-    path('reports/<int:meeting_id>', reports.vote_report, name='meeting/report/vote'),
+    path('reports/<int:meeting_id>/<int:vote_id>', reports.vote_report, name='meeting/report/vote'),
     path('', views.meeting_list, name='meeting/list')
 ]
