@@ -18,4 +18,4 @@ def vote_report(request, meeting_id, vote_id):
     context['votes'] = votes
     context['proxy_votes'] = proxy_votes
     context['options'] = vote.option_set.all()
-    return render(request, 'meeting/reports/meeting.html', context)
+    return render(request, 'meeting/reports/vote.html', context)
