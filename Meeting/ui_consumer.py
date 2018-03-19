@@ -100,7 +100,11 @@ class UIConsumer(JsonWebsocketConsumer):
 
     def send_vote(self, vote):
         options = []
-        for option in vote.option_set.all():
+        if vote.method == vote.STV:
+            option_list = vote.option_set.order_by('?').all()
+        else:
+            option_list = vote.option_set.all()
+        for option in option_list:
             options.append({
                 "id": option.id,
                 "name": option.name,
