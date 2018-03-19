@@ -1,0 +1,14 @@
+<h1>Closed Meetings</h1>
+<table>
+    <tr>
+        <td>name</td>
+        <td>date</td>
+    </tr>
+    {% for m in meetings %}
+        <tr>
+            <td><a href="{% url 'meeting/report/meeting' m.id %}">{{m.name}}</a></td>
+        <td>{{ m.time.date }}</td>
+        </tr>
+    {% endfor %}
+</table>
+
