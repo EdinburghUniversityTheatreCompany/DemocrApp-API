@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .views import reports
 
 urlpatterns = [
     path('<int:meeting_id>/checktoken', views.check_token, name='meeting/token_check'),
@@ -13,5 +14,8 @@ urlpatterns = [
     path('<int:meeting_id>/announcement', views.announcement, name='meeting/announcement'),
     path('manage/<int:meeting_id>/<int:vote_id>/add_option', views.add_option, name='meeting/add_vote_option'),
     path('manage/<int:meeting_id>/<int:vote_id>/remove_option', views.remove_option, name='meeting/remove_vote_option'),
+    path('reports', reports.report_list, name='meeting/report'),
+    path('reports/<int:meeting_id>', reports.meeting_report, name='meeting/report/meeting'),
+    path('reports/<int:meeting_id>/<int:vote_id>', reports.vote_report, name='meeting/report/vote'),
     path('', views.meeting_list, name='meeting/list')
 ]
