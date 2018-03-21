@@ -3,7 +3,9 @@ from .models import *
 
 
 admin.site.register(Meeting)
-
+admin.site.site_header = 'DemocrApp Administration'
+admin.site.site_title = 'DemocrApp'
+admin.site.index_title = 'DemocrApp Administration'
 
 class AuthTokenAdmin(admin.ModelAdmin):
     fields = ['has_proxy', 'token_set']
