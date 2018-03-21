@@ -1,7 +1,8 @@
-{% load vote_helpers %}
-<script src="https://democrapp.bedlamtheatre.co.uk/assets/vendor/jquery.min.js">
-</script>
+{% extends 'meeting/_base.html' %}
 
+{% load vote_helpers %}
+
+{% block content %}
 <h1>{{ meeting.name }}</h1>
 <ol>
     {% for t_set in token_sets %}
@@ -34,10 +35,13 @@
     <input type="hidden" name="type" value="create_token"/>
     <label for="proxy">voter has proxy?</label>
     <input type="checkbox" name="proxy"/>
-    <input type="submit" value="create token" />
+    <input type="button" onclick="create_token()" value="create token" />
 </form>
 <input type="text" id="message_textbox">
 <button type="button" id="announcement_submit" onclick="send_announcement()">announce</button>
+{% endblock %}
+
+{% block footerscripts %}
 <script>
     var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
     function csrfSafeMethod(method) {
@@ -67,4 +71,30 @@
             }
         });
     };
+
+    function create_token() {
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+        $.ajax({
+            type:'POST',
+            url: '{% url 'meeting/create_token' meeting.id %}',
+            data: {
+              'type': 'create_token',
+              'proxy': $('[proxy]').is('checked')
+            },
+            dataType: 'json',
+            success: function (data) {
+                console.log(data);
+                if (data.result == "success") {
+                    window.open(data.print_url);
+                }
+            }
+        });
+    }
 </script>
+{% endblock %}

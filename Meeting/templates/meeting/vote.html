@@ -1,6 +1,8 @@
+{% extends 'meeting/_base.html' %}
+
 {% load vote_helpers %}
-<script src="https://democrapp.bedlamtheatre.co.uk/assets/vendor/jquery.min.js">
-</script>
+
+{% block content %}
 {% csrf_token %}
 <h1>{{ vote.name }}</h1>
 {{ vote.description | linebreaks }}
@@ -13,6 +15,9 @@
     <input type="text" id="additional_option_textbox">
     <button type="button" id="additional_option_submit" onclick="add_option()">add</button>
 {% endif %}
+{% endblock %}
+
+{% block footerscripts %}
 <script>
     var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
     function csrfSafeMethod(method) {
@@ -65,3 +70,4 @@
         });
     };
 </script>
+{% endblock %}
