@@ -17,5 +17,5 @@ urlpatterns = [
     path('reports', reports.report_list, name='meeting/report'),
     path('reports/<int:meeting_id>', reports.meeting_report, name='meeting/report/meeting'),
     path('reports/<int:meeting_id>/<int:vote_id>', reports.vote_report, name='meeting/report/vote'),
-    path('', views.meeting_list, name='meeting/list')
+    path('list', views.meeting_list, name='meeting/list')
 ]
