@@ -1,5 +1,6 @@
 from django.utils import timezone
 from django.db import models
+from django.urls import reverse
 import uuid
 import random
 
@@ -22,6 +23,9 @@ class Meeting(models.Model):
 
     def __str__(self):
         return "{} \t-\t {}".format(self.time.date(), self.name)
+
+    def get_absolute_url(self):
+        return reverse('meeting/manage', args=[self.pk])
 
 
 class TokenSet(models.Model):
