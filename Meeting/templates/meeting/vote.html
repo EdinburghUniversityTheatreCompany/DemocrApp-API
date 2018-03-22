@@ -13,7 +13,7 @@
 </ul>
 {% if vote.method != vote.YES_NO_ABS and vote.state == vote.READY %}
     <input type="text" id="additional_option_textbox">
-    <button type="button" id="additional_option_submit" onclick="add_option()">add</button>
+    <button type="button" class="btn btn-sm btn-primary" id="additional_option_submit" onclick="add_option()">add</button>
 {% endif %}
 {% endblock %}
 

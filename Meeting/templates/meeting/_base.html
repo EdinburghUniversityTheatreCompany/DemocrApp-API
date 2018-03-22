@@ -7,14 +7,34 @@
 
     <link rel="stylesheet" href="/assets/vendor/bootstrap/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/assets/vendor/font-awesome/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="/assets/css/manage-style.css" />
 
     <title>[MANAGE] {{meeting.name}} - DemocrApp</title>
   </head>
 <body>
   <div class="container">
-    <div class="column row">
-      {% block content %}
-      {% endblock %}
+    <div class="row justify-content-md-center" style="height: 100vh;">
+      <div class="col">
+        <div class="header">
+            <img id='logo' src="/assets/img/EUTCredonwhite.png"></img>
+            <h1>[MANAGE]</h1>
+        </div>
+        <div id="root">
+          <div id="page">
+            <!--
+            This HTML file is a template.
+            If you open it directly in the browser, you will see an empty page.
+            -->
+            {% block content %}
+            {% endblock %}
+          </div>
+        </div>
+        <div id="footer">
+          <p>
+            Created in the pursuit of simpler democracy. @rphi &amp; @saty9. <a href="https://github.com/EdinburghUniversityTheatreCompany/DemocrApp">GitHub</a>.
+          </p>
+        </div>
+      </div>
     </div>
   </div>
 </body>

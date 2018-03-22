@@ -3,42 +3,92 @@
 {% load vote_helpers %}
 
 {% block content %}
+
 <h1>{{ meeting.name }}</h1>
-<ol>
-    {% for t_set in token_sets %}
-        <li>{{ t_set.created_at }}</li>
-    {% endfor %}
-</ol>
-<table>
-    <tr>
-        <td>name</td>
-        <td>status</td>
-        <td></td>
-        <td></td>
-    </tr>
+
+<div class="card">
+  <h5 class="card-header">Manage Ballots</h5>
+  <table class="table">
+    <thead class="thead-light">
+      <tr>
+        <th>Name</th>
+        <th>Status</th>
+        <th>Action</th>
+        <th>Recieved</th>
+      </tr>
+    </thead>
     {% for vote in votes %}
-        <tr>
-            <td><a href="{% url 'meeting/manage_vote' meeting.id vote.id%}">{{vote.name}}</a></td>
-        <td>{{vote.get_state_display}}</td>
-        <td>{% vote_action_button vote %}</td>
-        <td>{% vote_responses_or_remove vote csrf_token %}</td>
-        </tr>
+    <tr>
+      <td><a href="{% url 'meeting/manage_vote' meeting.id vote.id%}">{{vote.name}}</a></td>
+      <td>{{vote.get_state_display}}</td>
+      <td>{% vote_action_button vote %}</td>
+      <td>{% vote_responses_or_remove vote csrf_token %}</td>
+    </tr>
     {% endfor %}
-</table>
-<form action="{% url 'meeting/new_vote' meeting.id %}" method="post">
-    {% csrf_token %}
-    {{ form }}
-    <input type="submit" value="Submit" />
-</form>
-<form action="{% url 'meeting/manage' meeting.id %}" method="post">
-    {% csrf_token %}
-    <input type="hidden" name="type" value="create_token"/>
-    <label for="proxy">voter has proxy?</label>
-    <input type="checkbox" name="proxy"/>
-    <input type="button" onclick="create_token()" value="create token" />
-</form>
-<input type="text" id="message_textbox">
-<button type="button" id="announcement_submit" onclick="send_announcement()">announce</button>
+  </table>
+</div>
+
+<div class="card">
+  <h5 class="card-header">Create new ballot</h5>
+  <div class="card-body">
+    <form action="{% url 'meeting/new_vote' meeting.id %}" method="post">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group m-1">
+            {{ form.name.label_tag }}
+            {{ form.name.errors }}
+            <input type="text" class="form-control" name="{{ form.name.html_name }}" maxlength="150" required id="{{ form.name.id_for_label }}"></input>
+          </div>
+          <div class="form-group m-1">
+            {{ form.method.label_tag }}
+            {{ form.method.errors }}
+            <select name="{{ form.method.html_name }}" id="{{ form.method.id_for_label }}" class="form-control">
+              <option value="" selected>-- please select --</option>
+              {% for x,y in form.method.field.choices %}
+                  <option value="{{ x }}">{{ y }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group m-1">
+            {{ form.description.label_tag }}
+            {{ form.description.errors }}
+            <textarea class="form-control col" name="{{ form.description.html_name }}" row="3" maxlength="150" required id="{{ form.description.id_for_label }}"></textarea>
+          </div>
+          <input type="submit" value="Submit" class="btn btn-primary m-1 align-right" />
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="card">
+        <h5 class="card-header">Create voter token</h5>
+        <div class="card-body">
+          <form>
+            {% csrf_token %}
+            <label for="proxy">voter has proxy?</label>
+            <input type="checkbox" name="proxy"/>
+            <input type="button" class="btn btn-sm btn-primary" onclick="create_token()" value="create token" />
+          </form>
+        </div>
+      </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <h5 class="card-header">Send announcement</h5>
+      <div class="card-body">
+        <input type="text" id="message_textbox">
+        <button type="button" class="btn btn-sm btn-primary" id="announcement_submit" onclick="send_announcement()">announce</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block footerscripts %}

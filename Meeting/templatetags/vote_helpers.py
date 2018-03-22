@@ -11,17 +11,17 @@ register = template.Library()
 def vote_action_button(vote):
     args = [vote.token_set.meeting_id, vote.id]
     cases = {
-        Vote.READY: "<a class='btn' href='{}'>{}</a>".format(
+        Vote.READY: "<a class='btn btn-sm btn-success' href='{}'>{}</a>".format(
             reverse('meeting/open_vote', args=args),
             "Open Vote"),
-        Vote.LIVE: "<a class='btn' href='{}'>{}</a>".format(
+        Vote.LIVE: "<a class='btn btn-sm btn-warning' href='{}'>{}</a>".format(
             reverse('meeting/close_vote', args=args),
             "Close Vote"),
         Vote.COUNTING: "Counting",
-        Vote.NEEDS_TIE_BREAKER: "<a class='btn' href='{}'>{}</a>".format(
+        Vote.NEEDS_TIE_BREAKER: "<a class='btn btn-sm btn-secondary' href='{}'>{}</a>".format(
             reverse('meeting/break_tie', args=args),
             "Needs Tie Breaker"),
-        Vote.CLOSED: "Closed",
+        Vote.CLOSED: "-",
     }
     return format_html(cases[vote.state])
 
@@ -32,7 +32,7 @@ def vote_responses_or_remove(vote, token):
         return format_html("""<form action='{}' method='POST'>
         <input type='hidden' name='csrfmiddlewaretoken' value='{}' />
         <input type='hidden' name='_method' value='DELETE'>
-        <input type='submit' value='delete'>
+        <input class='btn btn-sm btn-danger' type='submit' value='delete'>
         </form>""",
             reverse('meeting/manage_vote', args=[vote.token_set.meeting_id, vote.id]),
             token)
@@ -44,5 +44,5 @@ def vote_responses_or_remove(vote, token):
 def option_remove_button(option):
     out = ""
     if option.vote.method != Vote.YES_NO_ABS and option.vote.state == Vote.READY:
-        out = "<button type='button' onclick='remove_option({})'>remove</button>".format(option.id)
+        out = "<button class='btn btn-sm btn-danger m-1' type='button' onclick='remove_option({})'>remove</button>".format(option.id)
     return format_html(out)
