@@ -135,7 +135,7 @@
             url: '{% url 'meeting/create_token' meeting.id %}',
             data: {
               'type': 'create_token',
-              'proxy': $('[proxy]').is('checked')
+              'proxy': $('[name=proxy]').prop('checked')
             },
             dataType: 'json',
             success: function (data) {
