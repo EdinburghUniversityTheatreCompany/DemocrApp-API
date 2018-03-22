@@ -42,7 +42,7 @@
             dataType: 'json',
             success: function (data) {
               if (data.result == "success") {
-                $('#option_list').append("<li id='" + data.id +"'>"+new_option+ "<button type='button' onclick='remove_option("+ data.id +")'>remove</button></li>")
+                $('#option_list').append("<li id='" + data.id +"'>"+new_option+ "<button class='btn btn-sm btn-danger' type='button' onclick='remove_option("+ data.id +")'>remove</button></li>")
               }
             }
         });
