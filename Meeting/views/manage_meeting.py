@@ -9,7 +9,7 @@ from ..models import Meeting, Vote, AuthToken
 
 
 @login_required(login_url='/api/admin/login')
-@permission_required('meeting.can_create')
+@permission_required('Meeting.add_meeting',raise_exception=True)
 def manage_meeting(request, meeting_id):
     context = {}
     meeting = get_object_or_404(Meeting, pk=meeting_id)
@@ -24,7 +24,7 @@ def manage_meeting(request, meeting_id):
 
 
 @login_required(login_url='/api/admin/login')
-@permission_required('meeting.can_create')
+@permission_required('Meeting.add_meeting')
 def create_token(request, meeting_id):
     if request.method == "POST":
         meeting = get_object_or_404(Meeting, pk=meeting_id)

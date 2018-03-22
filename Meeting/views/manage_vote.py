@@ -6,7 +6,7 @@ from ..models import Meeting, Vote
 
 
 @login_required(login_url='/api/admin/login')
-@permission_required('meeting.can_create')
+@permission_required('Meeting.add_meeting')
 def manage_vote(request, meeting_id, vote_id):
     meeting = get_object_or_404(Meeting, pk=meeting_id)
     vote = get_object_or_404(Vote, pk=vote_id)
