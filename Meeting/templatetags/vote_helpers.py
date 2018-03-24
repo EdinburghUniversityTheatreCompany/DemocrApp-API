@@ -10,6 +10,10 @@ register = template.Library()
 @register.simple_tag(name="vote_action_button")
 def vote_action_button(vote):
     args = [vote.token_set.meeting_id, vote.id]
+    if vote.method == Vote.STV and vote.state == Vote.LIVE:
+        return format_html("<a class='btn btn-sm btn-warning' href='{}'>{}</a>".format(
+            reverse('meeting/close_vote/stv', args=args),
+            "Close Vote"))
     cases = {
         Vote.READY: "<a class='btn btn-sm btn-success' href='{}'>{}</a>".format(
             reverse('meeting/open_vote', args=args),

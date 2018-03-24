@@ -4,7 +4,7 @@ from asgiref.sync import async_to_sync, sync_to_async
 from channels.layers import get_channel_layer
 from django.contrib.auth.decorators import permission_required, login_required
 from django.http import JsonResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
 from ..models import Meeting, Vote
@@ -30,14 +30,25 @@ def close_vote(request, meeting_id, vote_id):
         Vote.YES_NO_ABS: [vote],
         Vote.STV: [vote, num_seats]
     }
-    default_args = "hi"
+    # get a method function form the dictionary default to stv
     func = count_method_action.get(vote.method, stv)
+    # execute the retrieved function with the arguments from another dictionary
     func(*count_method_args.get(vote.method, [vote, 1]))
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)("broadcast", {"type": "vote.closing",
                                                           "vote_id": vote_id})
     message = {'type': 'success'}
     return HttpResponseRedirect(reverse('meeting/manage', args=[meeting.id]))
+
+@login_required(login_url='/api/admin/login')
+@permission_required('Meeting.add_meeting')
+def close_vote_stv(request, meeting_id, vote_id):
+    context = {}
+    vote = get_object_or_404(Vote, pk=vote_id)
+    meeting = get_object_or_404(Meeting, pk=meeting_id)
+    context['vote'] = vote
+    context['meeting'] = meeting
+    return render(request, 'meeting/close_stv.html', context)
 
 
 def yes_no_abs(vote):
