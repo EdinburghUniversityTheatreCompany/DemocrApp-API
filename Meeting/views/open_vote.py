@@ -15,7 +15,7 @@ def open_vote(request, meeting_id, vote_id):
     vote = get_object_or_404(Vote, pk=vote_id)
     if vote.token_set.meeting != meeting or vote.state != vote.READY:
         return JsonResponse({'result': 'failure'}, status=401)
-    if vote.option_set.count() <= 2:
+    if vote.option_set.count() < 2:
         return JsonResponse({'result': 'failure',
                              'reason:': 'insufficient_options',
                              'verbose_reason': 'an stv vote needs at least 2 options'})
