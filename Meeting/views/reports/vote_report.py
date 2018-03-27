@@ -6,7 +6,7 @@ def vote_report(request, meeting_id, vote_id):
     context = {}
     vote = get_object_or_404(Vote, pk=vote_id)
     context['vote'] = vote
-    voters = VoterToken.objects.filter(ballotentry__option__vote=vote)
+    voters = VoterToken.objects.filter(ballotentry__option__vote=vote).distinct()
     present_voters = voters.filter(proxy=False).all()
     proxies = voters.filter(proxy=True).all()
     votes = []
