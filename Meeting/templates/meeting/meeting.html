@@ -109,7 +109,7 @@
         });
         $.ajax({
             type:'POST',
-            url: '{% url 'meeting/announcement' meeting.id %}',
+            url: '/api/manage/2/create_token',
             data: {
               'message': message
             },
@@ -123,27 +123,40 @@
     };
 
     function create_token() {
-        $.ajaxSetup({
-            beforeSend: function(xhr, settings) {
-                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                }
-            }
-        });
-        $.ajax({
-            type:'POST',
-            url: '{% url 'meeting/create_token' meeting.id %}',
-            data: {
-              'type': 'create_token',
-              'proxy': $('[name=proxy]').prop('checked')
-            },
-            dataType: 'json',
-            success: function (data) {
-                if (data.result == "success") {
-                    window.open(data.print_url);
-                }
-            }
-        });
-    }
+      $.ajaxSetup({
+          beforeSend: function(xhr, settings) {
+              if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                  xhr.setRequestHeader("X-CSRFToken", csrftoken);
+              }
+          }
+      });
+      $.ajax({
+        type:'POST',
+        url: '{% url 'meeting/create_token' meeting.id %}',
+        data: {
+          'type': 'create_token',
+          'proxy': $('[name=proxy]').prop('checked')
+        },
+        dataType: 'json',
+        success: function (data) {
+          if (data.result == "success") {
+            console.log("Created token.");
+            console.log(data);
+            window.open(data.print_url);
+            return;
+          }
+          else {
+            alert("Error creating token. See JS console.");
+            console.log("Error creating token:");
+            console.log(data);
+          }
+        },
+        error: function(textStatus) {
+          alert("Error creating token. See JS console.");
+          console.log("Error creating token:");
+          console.log(textStatus);
+        }
+      });
+    };
 </script>
 {% endblock %}
