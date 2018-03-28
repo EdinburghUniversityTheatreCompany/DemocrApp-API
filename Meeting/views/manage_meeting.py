@@ -33,3 +33,26 @@ def create_token(request, meeting_id):
         at.save()
         return JsonResponse({"result": "success", "meeting_id": meeting_id, "meeting_name": meeting.name, "token": at.id, "proxy": proxy, "print_url": "/print.html?" + urllib.parse.urlencode({'t': at.id, 'h': meeting.name, 'p': proxy, 'm': meeting_id}, quote_via=urllib.parse.quote)})
     return JsonResponse({"result": "failure", "reason": "this endpoint requires POST as it changes state"})
+
+
+@login_required(login_url='/api/admin/login')
+@permission_required('Meeting.add_meeting')
+def deactivate_token(request, meeting_id):
+    if request.method == "POST":
+        meeting = get_object_or_404(Meeting, pk=meeting_id)
+        at = AuthToken.objects.filter(id=request.POST['key'])
+        if not at.exists():
+            return JsonResponse({'result': 'failure',
+                                 'reason': 'token doesnt exist'})
+        elif at.filter(token_set__meeting=meeting).exists():
+            at.filter(token_set__meeting=meeting).update(active=False)
+            #TODO(close any open websockets (probably through any related sessions))
+            return JsonResponse({'result': 'success'})
+        else:
+            return JsonResponse({'result': 'failure',
+                                 'reason': 'token is for a different meeting'})
+
+
+
+        return JsonResponse({"result": "success", "meeting_id": meeting_id, "meeting_name": meeting.name, "token": at.id, "proxy": proxy, "print_url": "/print.html?" + urllib.parse.urlencode({'t': at.id, 'h': meeting.name, 'p': proxy, 'm': meeting_id}, quote_via=urllib.parse.quote)})
+    return JsonResponse({"result": "failure", "reason": "this endpoint requires POST as it changes state"})

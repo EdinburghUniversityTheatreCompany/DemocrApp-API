@@ -129,7 +129,9 @@ class ManagementInterfaceCases(BaseTestCase):
         for x in range(0, 2):
             result = self.client.get(request_url)
             v.refresh_from_db()
-            self.assertJSONEqual(result.content, json.dumps({'result': 'failure'}))
+            self.assertJSONEqual(result.content, json.dumps({'reason:': 'insufficient_options',
+                                                             'result': 'failure',
+                                                             'verbose_reason': 'an stv vote needs at least 2 options'}))
             self.assertEqual(v.state, v.READY)
             o = Option(name=str(x), vote=v)
             o.save()
@@ -159,3 +161,40 @@ class ManagementInterfaceCases(BaseTestCase):
         v.refresh_from_db()
         # TODO(check broadcast to UI)
         self.assertIn(v.state, [v.COUNTING, v.NEEDS_TIE_BREAKER, v.CLOSED])
+
+    def test_deactivating_tokens(self):
+        active = AuthToken(token_set=self.ts, has_proxy=False)
+        active.save()
+        for x in [True, False]:
+            t = AuthToken(token_set=self.ts, has_proxy=x)
+            t.save()
+            self.assertTrue(t.active)
+            request_args = [reverse('meeting/deactivate_token', args=[self.m.id]),
+                            {'key': t.id}]
+            result = self.client.post(*request_args)
+            self.assertJSONEqual(result.content, json.dumps({'result': 'success'}))
+            t.refresh_from_db()
+            self.assertFalse(t.active)
+            active.refresh_from_db()
+            self.assertTrue(active.active)
+
+    def test_deactivating_tokens_non_existent_token(self):
+        request_args = [reverse('meeting/deactivate_token', args=[self.m.id]),
+                        {'key': 12345678}]
+        result = self.client.post(*request_args)
+        self.assertJSONEqual(result.content, json.dumps({'result': 'failure',
+                                                         'reason': 'token doesnt exist'}))
+
+    def test_deactivating_tokens_wrong_meeting(self):
+        t = AuthToken(token_set=self.ts, has_proxy=False)
+        t.save()
+        other_m = Meeting(name="hi")
+        other_m.save()
+        self.assertTrue(t.active)
+        request_args = [reverse('meeting/deactivate_token', args=[other_m.pk]),
+                        {'key': t.id}]
+        result = self.client.post(*request_args)
+        t.refresh_from_db()
+        self.assertTrue(t.active)
+        self.assertJSONEqual(result.content, json.dumps({'result': 'failure',
+                                                         'reason': 'token is for a different meeting'}))

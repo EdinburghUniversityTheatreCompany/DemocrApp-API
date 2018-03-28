@@ -48,9 +48,9 @@ def get_new_token_id():
 
 class AuthToken(models.Model):
     token_set = models.ForeignKey(TokenSet, on_delete=models.CASCADE)
-    creator = models.TextField
     has_proxy = models.BooleanField(default=False)
     id = models.PositiveIntegerField(primary_key=True, default=get_new_token_id)
+    active = models.BooleanField(default=True)
 
     def valid_for(self, vote):
         return vote.token_set == self.token_set
