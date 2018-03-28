@@ -28,7 +28,7 @@ def manage_meeting(request, meeting_id):
 def create_token(request, meeting_id):
     if request.method == "POST":
         meeting = get_object_or_404(Meeting, pk=meeting_id)
-        proxy = (("proxy" in request.POST.keys()) == 'true')
+        proxy = ("proxy" in request.POST.keys())
         at = AuthToken(token_set=meeting.tokenset_set.latest(), has_proxy=proxy)
         at.save()
         return JsonResponse({"result": "success", "meeting_id": meeting_id, "meeting_name": meeting.name, "token": at.id, "proxy": proxy, "print_url": "/print.html?" + urllib.parse.urlencode({'t': at.id, 'h': meeting.name, 'p': proxy, 'm': meeting_id}, quote_via=urllib.parse.quote)})
