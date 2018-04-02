@@ -15,6 +15,10 @@ class UIConsumer(JsonWebsocketConsumer):
 
     def websocket_disconnect(self, message):
         async_to_sync(self.channel_layer.group_discard)("broadcast", self.channel_name)
+        if self.session is not None:
+            async_to_sync(self.channel_layer.group_discard)(
+                self.session.auth_token.token_set.meeting.channel_group_name(),
+                self.channel_name)
         self.close()
 
     def receive_json(self, message, **kwargs):
@@ -43,6 +47,8 @@ class UIConsumer(JsonWebsocketConsumer):
                     if auth_token.has_proxy:
                         self.voter_tokens.append(auth_token.votertoken_set.filter(proxy=True).first().id)
                         voters.append({"token": self.voter_tokens[1], "type": "proxy"})
+                    async_to_sync(self.channel_layer.group_add)(auth_token.token_set.meeting.channel_group_name(),
+                                                                self.channel_name)
                     reply = {"type": "auth_response",
                             "result": "success",
                             "voters": voters,
@@ -57,7 +63,7 @@ class UIConsumer(JsonWebsocketConsumer):
                                     "reason": "Old Auth Token"})
             else:
                 raise RuntimeError
-        except:
+        except Exception as e:
             self.send_json({"type": "auth_response",
                             "result": "failure",
                             "reason": "Bad Auth Token"})

@@ -39,7 +39,6 @@ class TestUiDatabaseTransactions:
         self.client = Client()
         self.client.force_login(self.admin)
 
-
     async def authenticate(self, proxy):
         at = AuthToken(token_set=self.ts, has_proxy=proxy)
         at.save()
@@ -86,24 +85,25 @@ class TestUiDatabaseTransactions:
         assert "proxy" == poxy_dict_list[0]['type']
 
     @pytest.mark.asyncio
-    async def test_authenticate_votes_are_dispatched_as_they_are_opened(self):
+    async def test_votes_are_dispatched_as_they_are_opened(self):
         # TODO(Figure out why this only passes if run on its own)
         v1 = Vote(name='y n a test', token_set=self.ts, method=Vote.YES_NO_ABS, state=Vote.READY)
         v1.save()
-        v2 = Vote(token_set=self.ts, method=Vote.STV, state=Vote.READY)
+        v2 = Vote(token_set=self.ts, name='stv test', method=Vote.STV, state=Vote.READY)
         v2.save()
         for x in range(0, 5):
             Option(name=x, vote=v2).save()
         session, communicator = await self.authenticate(False)
         await communicator.send_json_to({'type': 'auth_request',
                                          'session_token': str(session.id)})
-        response = await communicator.receive_json_from()  # binning the auth response
+        response = await communicator.receive_json_from()
+        assert "success" == response['result']
         channel_layer = get_channel_layer()
-        await channel_layer.group_send("broadcast", {"type": "vote.opening",
-                                                              "vote_id": v1.id})
+        await channel_layer.group_send(self.m.channel_group_name(), {"type": "vote.opening",
+                                                                     "vote_id": v1.id})
         await self.check_votes(Vote.objects.filter(pk=v1.id), communicator)
-        await channel_layer.group_send("broadcast", {"type": "vote.opening",
-                                                              "vote_id": v2.id})
+        await channel_layer.group_send(self.m.channel_group_name(), {"type": "vote.opening",
+                                                                     "vote_id": v2.id})
         await self.check_votes(Vote.objects.filter(pk=v2.id), communicator)
 
     @pytest.mark.asyncio
@@ -117,7 +117,6 @@ class TestUiDatabaseTransactions:
         session, communicator = await self.authenticate(False)
         await communicator.send_json_to({'type': 'auth_request',
                                          'session_token': str(session.id)})
-        response = await communicator.receive_json_from()  # binning the auth response
         await self.check_votes(Vote.objects.filter(state=Vote.LIVE, token_set=self.ts), communicator)
 
     async def check_votes(self, expected_votes, communicator):
@@ -125,7 +124,7 @@ class TestUiDatabaseTransactions:
         vote_count = 0
         vote_ids = []
         for v in v_set.all():
-            response = await communicator.receive_json_from(2)
+            response = await communicator.receive_json_from()
             while response['type'] == 'auth_response':
                 response = await communicator.receive_json_from(timeout=10)
             assert 'ballot' == response['type']

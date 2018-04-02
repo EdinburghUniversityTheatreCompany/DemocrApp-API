@@ -19,6 +19,7 @@ def announcement(request, meeting_id):
         return JsonResponse({"result": "failure",
                              "error": "no message"})
     channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)("broadcast", {"type": "announcement",
-                                                          "message": request.POST["message"]})
+    async_to_sync(channel_layer.group_send)(meeting.channel_group_name(),
+                                            {"type": "announcement",
+                                             "message": request.POST["message"]})
     return JsonResponse({"result": "success"})

@@ -24,8 +24,8 @@ def open_vote(request, meeting_id, vote_id):
     vote.token_set = meeting.tokenset_set.latest()
     vote.save()
     channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)("broadcast", {"type": "vote.opening",
-                                                          "vote_id": vote_id})
+    async_to_sync(channel_layer.group_send)(meeting.channel_group_name(), {"type": "vote.opening",
+                                                                           "vote_id": vote_id})
 
     message = {
         "type": "success"

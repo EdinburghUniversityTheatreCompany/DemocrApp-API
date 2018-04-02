@@ -27,6 +27,9 @@ class Meeting(models.Model):
     def get_absolute_url(self):
         return reverse('meeting/manage', args=[self.pk])
 
+    def channel_group_name(self):
+        return "meeting_{}".format(self.pk)
+
 
 class TokenSet(models.Model):
     meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE)

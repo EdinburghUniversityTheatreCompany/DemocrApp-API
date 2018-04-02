@@ -35,8 +35,8 @@ def close_vote(request, meeting_id, vote_id):
     # execute the retrieved function with the arguments from another dictionary
     func(*count_method_args.get(vote.method, [vote, 1]))
     channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)("broadcast", {"type": "vote.closing",
-                                                          "vote_id": vote_id})
+    async_to_sync(channel_layer.group_send)(meeting.channel_group_name(), {"type": "vote.closing",
+                                                                           "vote_id": vote_id})
     message = {'type': 'success'}
     return HttpResponseRedirect(reverse('meeting/manage', args=[meeting.id]))
 
