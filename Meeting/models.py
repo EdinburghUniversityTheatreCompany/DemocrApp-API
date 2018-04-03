@@ -56,7 +56,7 @@ class AuthToken(models.Model):
     active = models.BooleanField(default=True)
 
     def valid_for(self, vote):
-        return vote.token_set == self.token_set
+        return (vote.token_set == self.token_set) and self.active
 
     def save(self, *args, **kwargs):
         if self._state.adding:

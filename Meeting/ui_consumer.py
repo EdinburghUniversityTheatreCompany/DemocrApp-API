@@ -85,13 +85,20 @@ class UIConsumer(JsonWebsocketConsumer):
                         if option is not None and value >= 1:
                             be = BallotEntry(option=option, token_id=voter_id, value=value)
                             be.save()
-
-        message = {
-            "type": "ballot_receipt",
-            "ballot_id": vote_num,
-            "voter_token": tokens,
-        }
-        self.send_json(message)
+            message = {
+                "type": "ballot_receipt",
+                "ballot_id": vote_num,
+                "voter_token": tokens,
+            }
+            self.send_json(message)
+        else:
+            message = {"type": "ballot_receipt",
+                       "result": "failure"}
+            if not self.session.auth_token.valid_for(vote):
+                message['reason'] = 'your token is not valid for this vote'
+            else:
+                message['reason'] = 'vote is not open'
+            self.send_json(message)
 
     def boot_others(self):
         others = Session.objects.filter(auth_token=self.session.auth_token)
