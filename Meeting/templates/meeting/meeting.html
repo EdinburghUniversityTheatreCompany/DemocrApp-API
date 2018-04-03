@@ -89,6 +89,21 @@
     </div>
   </div>
 </div>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="card">
+        <h5 class="card-header">Invalidate voter token</h5>
+        <div class="card-body">
+          <form id="token_invalidation_form">
+            {% csrf_token %}
+              <input type="number" id="invalidate_token_textbox" min="10000000" max="99999999">
+              <input type="button" class="btn btn-sm btn-primary" onclick="invalidate_token()" value="invalidate token" />
+          </form>
+        </div>
+      </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block footerscripts %}
@@ -154,6 +169,46 @@
         error: function(textStatus) {
           alert("Error creating token. See JS console.");
           console.log("Error creating token:");
+          console.log(textStatus);
+        }
+      });
+    };
+    function invalidate_token() {
+      $.ajaxSetup({
+          beforeSend: function(xhr, settings) {
+              if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                  xhr.setRequestHeader("X-CSRFToken", csrftoken);
+              }
+          }
+      });
+      $.ajax({
+        type:'POST',
+        url: '{% url 'meeting/deactivate_token' meeting.id %}',
+        data: {
+          'key': $('#invalidate_token_textbox')[0].valueAsNumber
+        },
+        dataType: 'json',
+        success: function (data) {
+          if (data.result == "success") {
+            console.log("invalidated token.");
+            console.log(data);
+            $('#token_invalidation_form')[0].reset();
+            alert("Success");
+            return;
+          }
+          else {
+            if (data.reason && data.reason == "token doesnt exist") {
+              alert("Token Doesnt exist, check you typed the number in correctly");
+            } else {
+              alert("Error invalidating token. See JS console.");
+              console.log("Error invalidating token:");
+              console.log(data);
+            }
+          }
+        },
+        error: function(textStatus) {
+          alert("Error invalidating token. See JS console.");
+          console.log("Error invalidating token:");
           console.log(textStatus);
         }
       });
