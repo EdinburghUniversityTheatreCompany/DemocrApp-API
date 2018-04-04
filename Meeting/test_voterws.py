@@ -21,6 +21,7 @@ async def test_bad_message():
     response = await communicator.receive_json_from()
     assert response['type'] == "Bad Message"
 
+pytestmark = pytest.mark.django_db
 
 @pytest.mark.django_db(transaction=True)
 class TestUiDatabaseTransactions:
@@ -147,3 +148,24 @@ class TestUiDatabaseTransactions:
             assert not response['existing_ballots']
             vote_count += 1
         assert v_set.count() == vote_count
+
+    @pytest.mark.asycio
+    async def test_authenticate_invalid_session(self):
+        communicator = WebsocketCommunicator(UIConsumer, "")
+        connected, _ = await communicator.connect()
+        assert connected
+        await communicator.send_json_to({'type': 'auth_request',
+                                         'session_token': 'garbage'})
+        response = await communicator.receive_json_from()
+        assert response['result'] == "failure"
+
+    @pytest.mark.asycio
+    async def test_authenticate_old_token(self):
+        _, communicator = await self.authenticate(False)
+        outdated_token = AuthToken(TokenSet=self.old_ts, has_proxy=False)
+        session = Session(auth_token=outdated_token)
+        session.save()
+        await communicator.send_json_to({'type': 'auth_request',
+                                         'session_token': str(session.id)})
+        response = await communicator.receive_json_from()
+        assert "failure" == response['result']
