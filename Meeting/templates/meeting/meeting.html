@@ -124,15 +124,20 @@
         });
         $.ajax({
             type:'POST',
-            url: '/api/manage/2/create_token',
+            url: '{% url 'meeting/announcement' meeting.id %}',
             data: {
               'message': message
             },
             dataType: 'json',
             success: function (data) {
               if (data.result == "success") {
-                $('#message_textbox').clear()
+                $('#message_textbox').val("")
               }
+            },
+            error: function(textStatus) {
+                alert("Error creating announcement.");
+                console.log("Error creating announcement:");
+                console.log(textStatus);
             }
         });
     };
