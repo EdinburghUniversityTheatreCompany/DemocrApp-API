@@ -2,6 +2,8 @@ from django.contrib.auth.models import User
 from django.test import TestCase, Client, TransactionTestCase
 from django.urls import reverse
 import json
+from django.utils import timezone
+
 
 from Meeting.models import *
 
@@ -136,9 +138,21 @@ class ManagementInterfaceCases(BaseTestCase):
             o = Option(name=str(x), vote=v)
             o.save()
         result = self.client.get(request_url)
+        assert(result.status_code == 302)
         v.refresh_from_db()
         self.assertEqual(v.LIVE, v.state)
-        # TODO(check broadcast to ui)
+
+    def test_open_already_opened_vote(self):
+        non_ready_states = list(map(lambda x: x[0], Vote.states))
+        non_ready_states.remove(Vote.READY)
+        for state in non_ready_states:
+            v = Vote(name='name', token_set=self.ts, method=Vote.YES_NO_ABS, state=state)
+            v.save()
+            request_url = reverse('meeting/open_vote', args=[self.m.id, v.pk])
+            result = self.client.get(request_url)
+            self.assertJSONEqual(result.content, json.dumps({'result': 'failure'}))
+            v.refresh_from_db()
+            self.assertEqual(v.state, state)
 
     def test_close_vote(self):
         v = Vote(name='name', token_set=self.ts, method=Vote.YES_NO_ABS)
@@ -198,3 +212,65 @@ class ManagementInterfaceCases(BaseTestCase):
         self.assertTrue(t.active)
         self.assertJSONEqual(result.content, json.dumps({'result': 'failure',
                                                          'reason': 'token is for a different meeting'}))
+
+    def test_announcement(self):
+        request_args = [reverse('meeting/announcement', args=[self.m.pk]),
+                        {'message': 'hello'}]
+        result = self.client.post(*request_args)
+        self.assertJSONEqual(result.content, json.dumps({'result': 'success'}))
+
+    def test_announcement_closed_meeting(self):
+        self.m.close_time = timezone.now()
+        self.m.save()
+        request_args = [reverse('meeting/announcement', args=[self.m.pk]),
+                        {'message': 'hello'}]
+        result = self.client.post(*request_args)
+        self.assertJSONEqual(result.content, json.dumps({'result': 'failure', "error": "meeting closed"}))
+
+    def test_open_meeting_list(self):
+        request_args = [reverse('meeting/list')]
+        result = self.client.get(*request_args)
+        self.assertJSONEqual(result.content, json.dumps({'meetings': [{'id': self.m.pk,
+                                                                      'name': self.m.name}]}))
+        m2 = Meeting(name="meeting 2")
+        m2.save()
+        request_args = [reverse('meeting/list')]
+        result = self.client.get(*request_args)
+        self.assertJSONEqual(result.content, json.dumps({'meetings': [{'id': self.m.pk,
+                                                                       'name': self.m.name},
+                                                                      {'id': m2.pk,
+                                                                       'name': m2.name}]}))
+        m2.close_time = timezone.now()
+        m2.save()
+        request_args = [reverse('meeting/list')]
+        result = self.client.get(*request_args)
+        self.assertJSONEqual(result.content, json.dumps({'meetings': [{'id': self.m.pk,
+                                                                       'name': self.m.name}]}))
+        self.m.close_time = timezone.now()
+        self.m.save()
+        request_args = [reverse('meeting/list')]
+        result = self.client.get(*request_args)
+        self.assertJSONEqual(result.content, json.dumps({'meetings': []}))
+
+    def test_meeting_management(self):
+        request_args = [reverse('meeting/manage', args=[self.m.pk])]
+        result = self.client.get(*request_args)
+        self.assertEquals(200, result.status_code)
+        for type in list(map(lambda x: x[0], Vote.methods)):
+            for state in list(map(lambda x: x[0], Vote.states)):
+                Vote(token_set=self.ts, method=type, state=state).save()
+                request_args = [reverse('meeting/manage', args=[self.m.pk])]
+                result = self.client.get(*request_args)
+                self.assertEquals(200, result.status_code)
+
+    def test_create_token(self):
+        for proxy in [True, False]:
+            request_args = [reverse('meeting/create_token', args=[self.m.pk]),
+                            {'proxy': proxy.__str__().lower()}]
+            result = json.loads(self.client.post(*request_args).content)
+            self.assertDictContainsSubset({"result": "success", "meeting_id": self.m.pk, "meeting_name": self.m.name, "proxy": proxy}, result)
+            token = AuthToken.objects.filter(pk=result['token']).first()
+            self.assertEqual(self.ts, token.token_set)
+            self.assertEqual(proxy, token.has_proxy)
+            assert token.active
+
