@@ -138,7 +138,7 @@ class UIConsumer(JsonWebsocketConsumer):
         message = {
             "type": "ballot_closed",
             "ballot_id": event['vote_id'],
-            "reason": "[optional reason string]",
+            "reason": "",
         }
         self.send_json(message)
 
