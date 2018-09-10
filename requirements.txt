@@ -2,6 +2,8 @@ Django>2
 channels>2
 channels_redis>2
 mysqlclient
+uwsgi
+daphne
 # testing
 pytest-asyncio
 pytest-django

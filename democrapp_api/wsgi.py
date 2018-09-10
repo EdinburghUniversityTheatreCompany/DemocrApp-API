@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "democrapp_ui.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "democrapp_api.settings")
 
 application = get_wsgi_application()
