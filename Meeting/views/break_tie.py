@@ -4,7 +4,6 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
 from ..models import Meeting, Vote, Tie
-from django.views.decorators.csrf import csrf_exempt
 
 
 @login_required(login_url='/api/admin/login')
