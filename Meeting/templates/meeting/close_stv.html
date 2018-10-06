@@ -12,7 +12,7 @@
           <form action="{% url 'meeting/close_vote' meeting.id vote.id %}" method="post">
                 {% csrf_token %}
                 <div class="form-group m-1">
-                    <input id="num_seats" type="number">
+                    <input id="num_seats" name="num_seats" type="number">
                     <input type="submit" value="Submit" class="btn btn-primary m-1 align-right" >
                 </div>
           </form>

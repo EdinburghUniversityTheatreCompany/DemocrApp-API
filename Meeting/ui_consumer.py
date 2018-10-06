@@ -72,6 +72,7 @@ class UIConsumer(JsonWebsocketConsumer):
         vote_num = message['ballot_id']
         vote = Vote.objects.filter(pk=vote_num).first()
         tokens = []
+        self.session.refresh_from_db()
         if self.session.auth_token.valid_for(vote) and vote.state == Vote.LIVE:
             for voter in message['votes'].items():
                 voter_id = int(voter[0])
@@ -93,11 +94,12 @@ class UIConsumer(JsonWebsocketConsumer):
             self.send_json(message)
         else:
             message = {"type": "ballot_receipt",
+                       "ballot_id": vote_num,
                        "result": "failure"}
             if not self.session.auth_token.valid_for(vote):
-                message['reason'] = 'your token is not valid for this vote'
+                message['reason'] = 'Your token is not valid for this vote.'
             else:
-                message['reason'] = 'vote is not open'
+                message['reason'] = 'Vote is not open'
             self.send_json(message)
 
     def boot_others(self):

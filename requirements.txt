@@ -2,6 +2,9 @@ Django>2
 channels>2
 channels_redis>2
 mysqlclient
+uwsgi
+daphne
+django-ratelimit>=1.1
 # testing
 pytest-asyncio
 pytest-django
