@@ -85,6 +85,7 @@ class Vote(models.Model):
     token_set = models.ForeignKey(TokenSet, on_delete=models.CASCADE)
     name = models.TextField(default='')
     description = models.TextField(default='')
+    results = models.TextField(default='')
     YES_NO_ABS = "YNA"
     STV = "STV"
     methods = (
