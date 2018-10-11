@@ -3,71 +3,75 @@
 {% load vote_helpers %}
 
 {% block content %}
-{% csrf_token %}
-<h1>{{ vote.name }}</h1>
-{{ vote.description | linebreaks }}
-<ul id="option_list">
-    {% for option in vote.option_set.all %}
-        <li id="{{ option.id }}">{{ option.name }} {% option_remove_button option %}</li>
-    {% endfor %}
-</ul>
-{% if vote.method != vote.YES_NO_ABS and vote.state == vote.READY %}
-    <input type="text" id="additional_option_textbox">
-    <button type="button" class="btn btn-sm btn-primary" id="additional_option_submit" onclick="add_option()">add</button>
-{% endif %}
+    {% csrf_token %}
+    <h1>{{ vote.name }}</h1>
+    {{ vote.description | linebreaks }}
+    <ul id="option_list">
+        {% for option in vote.option_set.all %}
+            <li id="{{ option.id }}">{{ option.name }} {% option_remove_button option %}</li>
+        {% endfor %}
+    </ul>
+    {% if vote.method != vote.YES_NO_ABS and vote.state == vote.READY %}
+        <input type="text" id="additional_option_textbox">
+        <button type="button" class="btn btn-sm btn-primary" id="additional_option_submit" onclick="add_option()">add
+        </button>
+    {% endif %}
 {% endblock %}
 
 {% block footerscripts %}
-<script>
-    var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
-    function csrfSafeMethod(method) {
+    <script>
+        var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
+
+        function csrfSafeMethod(method) {
             // these HTTP methods do not require CSRF protection
             return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-    }
-    function add_option() {
-        var new_option = $('#additional_option_textbox').val();
-        $.ajaxSetup({
-            beforeSend: function(xhr, settings) {
-                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+
+        function add_option() {
+            var new_option = $('#additional_option_textbox').val();
+            $.ajaxSetup({
+                beforeSend: function (xhr, settings) {
+                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    }
                 }
-            }
-        });
-        $.ajax({
-            type:'POST',
-            url: '{% url 'meeting/add_vote_option' meeting.id vote.id %}',
-            data: {
-              'name': new_option
-            },
-            dataType: 'json',
-            success: function (data) {
-              if (data.result == "success") {
-                $('#option_list').append("<li id='" + data.id +"'>"+new_option+ "<button class='btn btn-sm btn-danger' type='button' onclick='remove_option("+ data.id +")'>remove</button></li>")
-              }
-            }
-        });
-    };
-    function remove_option(target) {
-        $.ajaxSetup({
-            beforeSend: function(xhr, settings) {
-                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            });
+            $.ajax({
+                type: 'POST',
+                url: '{% url 'meeting/add_vote_option' meeting.id vote.id %}',
+                data: {
+                    'name': new_option
+                },
+                dataType: 'json',
+                success: function (data) {
+                    if (data.result == "success") {
+                        $('#option_list').append("<li id='" + data.id + "'>" + new_option + "<button class='btn btn-sm btn-danger' type='button' onclick='remove_option(" + data.id + ")'>remove</button></li>")
+                    }
                 }
-            }
-        });
-        $.ajax({
-            type:'POST',
-            url: '{% url 'meeting/remove_vote_option' meeting.id vote.id %}',
-            data: {
-              'id': target
-            },
-            dataType: 'json',
-            success: function (data) {
-              if (data.result == "success") {
-                $('#'+target).remove()
-              }
-            }
-        });
-    };
-</script>
+            });
+        };
+
+        function remove_option(target) {
+            $.ajaxSetup({
+                beforeSend: function (xhr, settings) {
+                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    }
+                }
+            });
+            $.ajax({
+                type: 'POST',
+                url: '{% url 'meeting/remove_vote_option' meeting.id vote.id %}',
+                data: {
+                    'id': target
+                },
+                dataType: 'json',
+                success: function (data) {
+                    if (data.result == "success") {
+                        $('#' + target).remove()
+                    }
+                }
+            });
+        };
+    </script>
 {% endblock %}
