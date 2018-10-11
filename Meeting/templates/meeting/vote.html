@@ -6,6 +6,8 @@
     {% csrf_token %}
     <h1>{{ vote.name }}</h1>
     {{ vote.description | linebreaks }}
+    --------------------------------
+    {{ vote.results | linebreaks }}
     <ul id="option_list">
         {% for option in vote.option_set.all %}
             <li id="{{ option.id }}">{{ option.name }} {% option_remove_button option %}</li>

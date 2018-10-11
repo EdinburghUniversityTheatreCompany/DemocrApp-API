@@ -52,7 +52,7 @@ def close_vote_stv(request, meeting_id, vote_id):
 def yes_no_abs(vote):
     from ..tallying import yes_no_abs_count
     y, n, a = yes_no_abs_count(vote.id)
-    vote.description = "Y:{},N:{},A{}".format(y, n, a)
+    vote.results = "Y:{},N:{},A{}".format(y, n, a)
     vote.state = Vote.CLOSED
     vote.save()
 

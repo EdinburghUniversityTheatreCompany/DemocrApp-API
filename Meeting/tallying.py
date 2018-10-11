@@ -76,14 +76,14 @@ def run_open_stv(vote_id, seats):
         winners.append(ballots.names[w])
     for l in electionCounter.losers:
         losers.append(ballots.names[l])
-    vote.description = "Winners: {} \nLosers:{}".format(winners, losers)
+    vote.results = "Winners: {} \nLosers:{}".format(winners, losers)
     r = YamlReport(electionCounter, outputToString=True)
     r.generateReport()
     report = "\n"
     for index, name in enumerate(ballots.names):
         report += "[{}] -> {}\n".format(index, name)
     report += r.outputFile
-    vote.description += report
+    vote.results += report
     vote.save()
 
 
