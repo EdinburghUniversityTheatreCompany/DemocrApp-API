@@ -4,16 +4,12 @@
         <li>{{ t_set.created_at }}</li>
     {% endfor %}
 </ol>
-<table>
-    <tr>
-        <td>name</td>
-        <td></td>
-    </tr>
-    {% for vote in votes %}
-        <tr>
-            <td><a href="{% url 'meeting/report/vote' meeting.id vote.id%}">{{vote.name}}</a></td>
-        <td>{{ vote.responses }}</td>
-        </tr>
-    {% endfor %}
-</table>
+
+{% for vote in votes %}
+    <h2><a href="{% url 'meeting/report/vote' meeting.id vote.id %}">{{ vote.name }}</a></h2>
+    <br>
+    responses: {{ vote.responses }}
+    <br>
+    {{ vote.results | linebreaks }}
+{% endfor %}
 
