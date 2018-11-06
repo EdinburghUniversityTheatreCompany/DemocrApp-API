@@ -119,12 +119,12 @@ class Vote(models.Model):
 
     def save(self, *args, **kwargs):
         if self._state.adding and self.method == self.YES_NO_ABS:
-            super(Vote, self).save(args, kwargs)
+            super(Vote, self).save(*args, **kwargs)
             Option(vote=self, name="yes").save()
             Option(vote=self, name="no").save()
             Option(vote=self, name="abs").save()
         else:
-            super(Vote, self).save(args, kwargs)
+            super(Vote, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.name

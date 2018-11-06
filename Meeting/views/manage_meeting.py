@@ -1,6 +1,9 @@
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from django.utils import timezone
 
 import urllib.parse
 
@@ -9,7 +12,7 @@ from ..models import Meeting, Vote, AuthToken
 
 
 @login_required(login_url='/api/admin/login')
-@permission_required('Meeting.add_meeting',raise_exception=True)
+@permission_required('Meeting.add_meeting', raise_exception=True)
 def manage_meeting(request, meeting_id):
     context = {}
     meeting = get_object_or_404(Meeting, pk=meeting_id)
@@ -21,6 +24,26 @@ def manage_meeting(request, meeting_id):
         context['votes'] = Vote.objects.filter(token_set__meeting=meeting)
         context['form'] = form
         return render(request, 'meeting/meeting.html', context)
+
+
+@login_required(login_url='/api/admin/login')
+@permission_required('Meeting.add_meeting', raise_exception=True)
+def close_meeting(request, meeting_id):
+    if request.method == "POST":
+        meeting = get_object_or_404(Meeting, pk=meeting_id)
+        for t_set in meeting.tokenset_set.all():
+            for vote in t_set.vote_set.filter(state=Vote.LIVE):
+                vote.close(1)
+            for vote in t_set.vote_set.filter(state=Vote.READY):
+                vote.delete()
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(meeting.channel_group_name(),
+                                                {"type": "announcement",
+                                                 "message": "This meeting has now closed"})
+        meeting.close_time = timezone.now()
+        meeting.save()
+        return redirect("meeting/report/meeting", meeting_id=meeting_id)
+    return JsonResponse({"result": "failure", "reason": "this endpoint requires POST as it changes state"})
 
 
 @login_required(login_url='/api/admin/login')
