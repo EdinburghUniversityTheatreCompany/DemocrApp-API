@@ -274,3 +274,16 @@ class ManagementInterfaceCases(BaseTestCase):
             self.assertEqual(proxy, token.has_proxy)
             assert token.active
 
+    def test_close_meeting(self):
+        v1 = self.ts.vote_set.create(method=Vote.YES_NO_ABS, state=Vote.LIVE)
+        v2 = self.ts.vote_set.create(method=Vote.YES_NO_ABS, state=Vote.READY)
+        before = timezone.now()
+        out = self.client.post(reverse('meeting/close', args=[self.m.pk]))
+        after = timezone.now()
+        self.assertRedirects(out, reverse('meeting/report/meeting', args=[self.m.pk]))
+        v1.refresh_from_db()
+        self.assertFalse(Vote.objects.filter(pk=v2.pk).exists())
+        self.assertEquals(v1.state, Vote.CLOSED)
+        self.m.refresh_from_db()
+        self.assertGreater(self.m.close_time, before)
+        self.assertLess(self.m.close_time, after)
