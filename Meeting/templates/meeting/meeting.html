@@ -103,6 +103,17 @@
         </div>
       </div>
   </div>
+  <div class="col-md-6">
+    <div class="card">
+        <h5 class="card-header">Close Meeting</h5>
+        <div class="card-body">
+          <form action="{% url 'meeting/close' meeting.id %}" method="post">
+            {% csrf_token %}
+              <input type="submit" class="btn btn-sm btn-danger" onclick="close_meeting(event)" value="Close" />
+          </form>
+        </div>
+      </div>
+  </div>
 </div>
 {% endblock %}
 
@@ -218,5 +229,14 @@
         }
       });
     };
+
+    function close_meeting(e){
+        if(confirm("Are you sure? this will close all open votes and delete unopened ones")){
+            return true;
+        } else {
+            e.preventDefault();
+            return false;
+        }
+    }
 </script>
 {% endblock %}
