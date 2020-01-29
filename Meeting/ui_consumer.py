@@ -78,14 +78,9 @@ class UIConsumer(JsonWebsocketConsumer):
                 voter_id = int(voter[0])
                 ballot_entries = voter[1]
                 if voter_id in self.voter_tokens:
-                    BallotEntry.objects.filter(token_id=voter, option__vote=vote).delete()
+                    vote.get_method_class().receive_ballot(vote, voter_id, ballot_entries)
                     tokens.append(voter_id)
-                    for ballot_entry in ballot_entries.items():
-                        value = int(ballot_entry[1])
-                        option = vote.option_set.filter(pk=ballot_entry[0]).first()
-                        if option is not None and value >= 1:
-                            be = BallotEntry(option=option, token_id=voter_id, value=value)
-                            be.save()
+
             message = {
                 "type": "ballot_receipt",
                 "ballot_id": vote_num,

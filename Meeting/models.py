@@ -8,6 +8,8 @@ from django.urls import reverse
 import uuid
 import random
 
+from Meeting.voting_methods import YNA, STV as STVMethod, VoteMethod
+
 
 class Meeting(models.Model):
     time = models.DateTimeField(default=timezone.now)
@@ -96,6 +98,10 @@ class Vote(models.Model):
         (YES_NO_ABS, "Yes No Abs"),
         (STV, "Single Transferable Vote"),
     )
+    method_classes = {
+        YES_NO_ABS: YNA,
+        STV: STVMethod
+    }
     method = models.CharField(max_length=3, default=STV, choices=methods)
     READY = 'RE'
     LIVE = 'LI'
@@ -132,32 +138,13 @@ class Vote(models.Model):
     def close(self, num_seats):
         self.state = self.COUNTING
         self.save()
-        count_method_action = {
-            Vote.YES_NO_ABS: self.yes_no_abs,
-            Vote.STV: self.stv,
-        }
-        count_method_args = {
-            Vote.YES_NO_ABS: [],
-            Vote.STV: [num_seats]
-        }
-        # get a method function form the dictionary default to stv
-        func = count_method_action.get(self.method, self.stv)
-        # execute the retrieved function with the arguments from another dictionary
-        func(*count_method_args.get(self.method, [self, 1]))
+        self.method_classes.get(self.method).count(self.id, num_seats=num_seats)
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(self.token_set.meeting.channel_group_name(), {"type": "vote.closing",
                                                                                               "vote_id": self.pk})
 
-    def yes_no_abs(self):
-        from Meeting.tallying import yes_no_abs_count
-        y, n, a = yes_no_abs_count(self.id)
-        self.results = "Y:{},N:{},A{}".format(y, n, a)
-        self.state = Vote.CLOSED
-        self.save()
-
-    def stv(self, seats):
-        from Meeting.tallying import run_open_stv
-        _thread.start_new_thread(run_open_stv, (self.id, seats))
+    def get_method_class(self) -> VoteMethod:
+        return self.method_classes[self.method]
 
 
 class Option(models.Model):
