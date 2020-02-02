@@ -15,17 +15,10 @@ logger = logging.getLogger(__name__)
 class STV(VoteMethod):
 
     @classmethod
-    def count(cls, vote_id, **kwargs):
-        from Meeting.models import Vote
-        vote = Vote.objects.get(pk=vote_id)
+    def count(cls, vote, **kwargs):
+        from Meeting.models import BallotEntry, Vote
         seats = kwargs.get("num_seats", 1)
         assert vote.method == Vote.STV
-        _thread.start_new_thread(cls._count, (vote_id, seats))
-
-    @classmethod
-    def _count(cls, vote_id, seats):
-        from Meeting.models import Vote, BallotEntry, Tie, Option
-        vote = Vote.objects.get(pk=vote_id)
         ballots = Ballots()
 
         options = vote.option_set.all().order_by('pk')
@@ -69,7 +62,6 @@ class STV(VoteMethod):
             logger.debug(status)
         logger.info(electionCounter.winners)
         vote.refresh_from_db()
-        vote.state = Vote.CLOSED
         winners = []
         losers = []
         for w in electionCounter.winners:

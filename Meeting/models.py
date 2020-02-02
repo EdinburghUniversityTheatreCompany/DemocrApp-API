@@ -9,6 +9,7 @@ import uuid
 import random
 
 from Meeting.voting_methods import YNA, STV as STVMethod, VoteMethod
+from Meeting.tasks import run_count
 
 
 class Meeting(models.Model):
@@ -138,7 +139,7 @@ class Vote(models.Model):
     def close(self, num_seats):
         self.state = self.COUNTING
         self.save()
-        self.method_classes.get(self.method).count(self.id, num_seats=num_seats)
+        run_count.delay(self.id, num_seats)
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(self.token_set.meeting.channel_group_name(), {"type": "vote.closing",
                                                                                               "vote_id": self.pk})
