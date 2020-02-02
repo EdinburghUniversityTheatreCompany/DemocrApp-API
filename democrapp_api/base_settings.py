@@ -51,9 +51,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-if DEBUG:
-    MIDDLEWARE.append('democrapp_api.middleware.DevProxyMiddleware')
-    UPSTREAM = "http://127.0.0.1:3000"
 
 CSRF_USE_SESSIONS = True
 
@@ -82,7 +79,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("redis", 6379)],
+            "hosts": [("127.0.0.1", 6379)],
         },
     },
 }
@@ -138,3 +135,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/api/static/'
+
+CELERY_BROKER_URL = 'redis://localhost'

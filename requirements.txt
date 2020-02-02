@@ -5,6 +5,8 @@ mysqlclient
 uwsgi
 daphne
 django-ratelimit>=1.1
+celery
+redis<3.4 # version 3.4 of redis currently has compatibility issues https://github.com/andymccurdy/redis-py/issues/1275
 # testing
 pytest-asyncio
 pytest-django
