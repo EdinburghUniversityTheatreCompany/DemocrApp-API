@@ -149,7 +149,7 @@ class ElectionMethod(object):
     if self.prec == 0: 
       return str(value)
     nfmt = "%d.%0" + str(self.prec) + "d" # %d.%0_d
-    return nfmt % (value/self.p, value%self.p)
+    return nfmt % (value//self.p, value%self.p)
 
   def checkMinRequirements(self):
     "Only attempt to count votes if there are enough candidates and voters."
@@ -580,7 +580,7 @@ class STV(Iterative):
       threshNum = self.p * self.b.numBallots - self.exhausted[self.R]
 
     if self.threshName[2] == "Whole":
-      thresh = threshNum/threshDen/self.p*self.p + self.p
+      thresh = (threshNum/threshDen)//self.p*self.p + self.p
     elif self.threshName[2] == "Fractional":
       thresh = threshNum/threshDen + 1
 
