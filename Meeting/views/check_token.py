@@ -2,11 +2,8 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from ..models import Meeting, Session
-from ratelimit.decorators import ratelimit
-
 
 @csrf_exempt
-@ratelimit(key='ip', rate='100/h', block=True)
 def check_token(request, meeting_id):
     token = request.POST['token']
     meeting = get_object_or_404(Meeting, pk=meeting_id)
