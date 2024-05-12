@@ -49,7 +49,7 @@ candidates, then the unranked candidates share the last-place vote.</p>
     
     # Create data structures for speeding up mostLast()
     self.unranked = [None] * self.b.numWeightedBallots
-    for i in xrange(self.b.numWeightedBallots):
+    for i in range(self.b.numWeightedBallots):
       u = []
       b = self.b.getWeightedBallot(i)[1]
       for c in self.continuing:
@@ -65,7 +65,7 @@ candidates, then the unranked candidates share the last-place vote.</p>
 
     # Count last place votes per candidate
     total = [0] * self.b.numCandidates
-    for i in xrange(self.b.numWeightedBallots):
+    for i in range(self.b.numWeightedBallots):
       nUnranked = len(self.unranked[i])
       weight, blt = self.b.getWeightedBallot(i)
       # If no unranked cands, last place candidate gets the vote
@@ -101,7 +101,7 @@ candidates, then the unranked candidates share the last-place vote.</p>
     desc += "and %s, %f. "  % (self.b.names[c], total[c])
 
     # Update data structures
-    for i in xrange(self.b.numWeightedBallots):
+    for i in range(self.b.numWeightedBallots):
       if c0 in self.unranked[i]: 
         self.unranked[i].remove(c0)
 

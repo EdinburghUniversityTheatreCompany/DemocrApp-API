@@ -298,6 +298,7 @@ Matrix of beatpath magnitudes:
     maxnSubCol = (self.maxWidth-2)/(self.maxColWidth+1)
     # nRow is the number of rows needed to display all of the columns    
     (nRow, r) = divmod(nCol, maxnSubCol)
+    nRow = int(nRow)
     if r > 0: 
       nRow += 1
     # nSubCol is the number of columns per row (distrubted evenly across rows)
@@ -305,7 +306,7 @@ Matrix of beatpath magnitudes:
     if r > 0: 
       nSubCol += 1
     # colWidth is the width of a column in characters
-    colWidth = (self.maxWidth-2)/nSubCol - 1
+    colWidth = int((self.maxWidth-2)/nSubCol) - 1
     # width is the actual width of the table
     width = 2 + nSubCol*(colWidth+1)
 

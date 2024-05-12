@@ -78,9 +78,9 @@ There are three choices for the completion method:</p>
       self.pMat.append([0] * self.b.numCandidates)
 
     # Compute pMat
-    for i in xrange(self.b.numWeightedBallots):
+    for i in range(self.b.numWeightedBallots):
       weight, ballot = self.b.getWeightedBallot(i)
-      remainingC = range(self.b.numCandidates)
+      remainingC = list(range(self.b.numCandidates))
       for c in ballot:
         remainingC.remove(c)
         for d in remainingC:
@@ -96,7 +96,7 @@ There are three choices for the completion method:</p>
     # compute the Smith set
     # Adapted from code posted by Markus Schulze at
     # http://groups.yahoo.com/group/election-methods-list/message/6493
-    self.smithSet = range(self.b.numCandidates)
+    self.smithSet = list(range(self.b.numCandidates))
     for c in range(self.b.numCandidates):
       for d in range(self.b.numCandidates):
         if c != d:
@@ -157,7 +157,7 @@ There are three choices for the completion method:</p>
               self.dMat[c][k] = dmin
               changing = 1
 
-    ctng = range(self.b.numCandidates)[:]
+    ctng = list(range(self.b.numCandidates))[:]
     for c in ctng[:]:
       for d in ctng[:]:
         if self.dMat[d][c] > self.dMat[c][d] and c in ctng:

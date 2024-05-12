@@ -452,11 +452,11 @@ of votes shall be made.
           key = "first"
         else:
           key = v
-        if key not in self.votesByTransferValue.keys():
+        if key not in list(self.votesByTransferValue.keys()):
           self.votesByTransferValue[key] = []
         self.votesByTransferValue[key].append(i)
 
-    self.transferValues = self.votesByTransferValue.keys()
+    self.transferValues = list(self.votesByTransferValue.keys())
     if "first" in self.transferValues:
       self.transferValues.remove("first")
       self.transferValues.sort(reverse=True)

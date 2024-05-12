@@ -45,7 +45,7 @@ makes no difference.</p>
     "Count the votes using approval voting."
 
     # Count the approvals
-    for i in xrange(self.b.numWeightedBallots):
+    for i in range(self.b.numWeightedBallots):
       weight, blt = self.b.getWeightedBallot(i)
       for j in blt:
         self.count[j] += weight

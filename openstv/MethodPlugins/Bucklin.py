@@ -70,7 +70,7 @@ for further choices as necessary.</p>
         self.exhausted[self.R] = self.exhausted[self.R-1]
 
       # Count votes using multiple rankings
-      for i in xrange(self.b.numWeightedBallots):
+      for i in range(self.b.numWeightedBallots):
         weight, blt = self.b.getWeightedBallot(i)
         if len(blt) > self.R:
           c = blt[self.R]

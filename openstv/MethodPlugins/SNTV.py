@@ -47,7 +47,7 @@ of proportional representation.</p>
 
     # Count the first place votes
     candidates = set(range(self.b.numCandidates))
-    for i in xrange(self.b.numWeightedBallots):
+    for i in range(self.b.numWeightedBallots):
       c = self.b.getTopChoiceFromWeightedBallot(i, candidates)
       if c == None:
         self.exhausted += self.b.getWeight(i)

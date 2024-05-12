@@ -12,11 +12,11 @@ from openstv.ballots import Ballots
 from openstv.plugins import getMethodPlugins, getReportPlugins
 
 methods = getMethodPlugins("byName", exclude0=False)
-methodNames = methods.keys()
+methodNames = list(methods.keys())
 methodNames.sort()
 
 reports = getReportPlugins("byName", exclude0=False)
-reportNames = reports.keys()
+reportNames = list(reports.keys())
 reportNames.sort()
 
 usage = """
@@ -43,9 +43,9 @@ Usage:
 # Parse the command line.
 try:
   (opts, args) = getopt.getopt(sys.argv[1:], "Pp:r:s:t:w:x:")
-except getopt.GetoptError, err:
-  print str(err) # will print something like "option -a not recognized"
-  print usage
+except getopt.GetoptError as err:
+  print(str(err)) # will print something like "option -a not recognized"
+  print(usage)
   sys.exit(1)
 
 profile = False
@@ -60,8 +60,8 @@ for o, a in opts:
     if a in reportNames:
       reportformat = a
     else:
-      print "Unrecognized report format '%s'" % a
-      print usage
+      print("Unrecognized report format '%s'" % a)
+      print(usage)
       sys.exit(1)
   if o == "-p":
     prec = int(a)
@@ -71,15 +71,15 @@ for o, a in opts:
     if a in ["random", "alpha", "index"]:
       strongTieBreakMethod = a
     else:
-      print "Unrecognized tie-break method '%s'" % a
-      print usage
+      print("Unrecognized tie-break method '%s'" % a)
+      print(usage)
       sys.exit(1)
   if o == "-w":
     if a in ["strong", "forward", "backward"]:
       weakTieBreakMethod = a
     else:
-      print "Unrecognized weak tie-break method '%s'" % a
-      print usage
+      print("Unrecognized weak tie-break method '%s'" % a)
+      print(usage)
       sys.exit(1)
   if o == "-P":
     import cProfile
@@ -91,18 +91,18 @@ for o, a in opts:
 
 if len(args) != 2:
   if len(args) < 2:
-    print "Specify method and ballot file"
+    print("Specify method and ballot file")
   else:
-    print "Too many arguments"
-  print usage
+    print("Too many arguments")
+  print(usage)
   sys.exit(1)
 
 name = args[0]
 bltFn = args[1]
 
 if name not in methodNames:
-  print "Unrecognized method '%s'" % name
-  print usage
+  print("Unrecognized method '%s'" % name)
+  print(usage)
   sys.exit(1)
 
 try:
@@ -111,13 +111,13 @@ try:
   if numSeats:
     dirtyBallots.numSeats = numSeats
   cleanBallots = dirtyBallots.getCleanBallots()
-except RuntimeError, msg:
-  print msg
+except RuntimeError as msg:
+  print(msg)
   sys.exit(1)
 
 def doElection(reps=1):
   "run election with repeat count for profiling"
-  for i in xrange(reps):
+  for i in range(reps):
     e = methods[name](cleanBallots)
     if strongTieBreakMethod is not None:
       e.strongTieBreakMethod = strongTieBreakMethod

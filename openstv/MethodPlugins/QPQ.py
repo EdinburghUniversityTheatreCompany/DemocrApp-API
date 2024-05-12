@@ -196,7 +196,7 @@ that, like STV, meets the <i>Droop proportionality criterion</i>.</p>
 
     # Allocate ballots to candidates based on the first choices.
     self.b.contrib = []
-    for i in xrange(self.b.numWeightedBallots):
+    for i in range(self.b.numWeightedBallots):
       c = self.b.getTopChoiceFromWeightedBallot(i, self.continuing)
       if c is not None:
         self.votes[c].append(i)
@@ -221,7 +221,7 @@ that, like STV, meets the <i>Droop proportionality criterion</i>.</p>
     "Update quotients."
 
     # Count contribution of all ballots (will eventually subtract active contributions)
-    for i in xrange(self.b.numWeightedBallots):
+    for i in range(self.b.numWeightedBallots):
       self.tx[self.R] += self.b.contrib[i]
 
     # Count number (vc) and contribution (tc) of active ballots (ranking hopeful candidates);

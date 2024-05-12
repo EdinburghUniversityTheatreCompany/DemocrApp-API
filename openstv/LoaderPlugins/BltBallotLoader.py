@@ -59,7 +59,7 @@ class BltBallotLoader(LoaderPlugin):
         ballotList.appendBallot(ballot, customID)
       else:
         (weight, ballot) = self.getBallot(line)
-        for i in xrange(weight):
+        for i in range(weight):
           ballotList.appendBallot(ballot)
       line = self.getNextNonBlankLine(f)
 
@@ -152,7 +152,7 @@ class BltBallotLoader(LoaderPlugin):
   
   def getNextNonBlankLine(self, f):
     while True:
-      line = f.next()
+      line = next(f)
       if self.blankLineRE.match(line) is None: 
         break
     return line
@@ -194,12 +194,12 @@ class BltBallotLoader(LoaderPlugin):
       f.write(" ".join(withdrawnList) + "\n")
 
     if packed:
-      for i in xrange(ballotList.numWeightedBallots):
+      for i in range(ballotList.numWeightedBallots):
         weight, ballot = ballotList.getWeightedBallot(i)
         line = self.stringifyBallot(weight, ballot)
         f.write(line + "\n")
     else:
-      for i in xrange(ballotList.numBallots):
+      for i in range(ballotList.numBallots):
         ballot = ballotList.getBallot(i)
         line = self.stringifyBallot(1, ballot)
         if ballotList.customBallotIDs:

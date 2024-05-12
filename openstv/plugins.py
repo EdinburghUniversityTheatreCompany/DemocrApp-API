@@ -179,25 +179,19 @@ class ReportPlugin(object):
 
   status = 0
   
-  def __init__(self, e, outputFile=None, test=False, outputToString=False):
+  def __init__(self, e, outputFile=None, test=False):
 
     self.e = e
     self.cleanB = self.e.b
     self.dirtyB = self.e.b.dirtyBallots
     if self.dirtyB == None:
       self.dirtyB = self.cleanB
-    self.outputToString = outputToString
-    if outputToString:
-      outputFile = ""
     self.outputFile = outputFile
     self.test = test
 
   def output(self, output):
     """Stream output to destination file-like object."""
-    if self.outputToString:
-      self.outputFile += output
-    else:
-      print(output, end="", file=self.outputFile)
+    print(output, end=' ', file=self.outputFile)
     
   def generateReport(self):
     "Selector for major categories of methods."
@@ -269,8 +263,12 @@ def getPlugins(package, baseClass, format, exclude0):
   # Import all modules in package
   ppath = package.__path__
   pname = package.__name__ + "."
+  pluginClasses = []
   for importer, modname, ispkg in pkgutil.iter_modules(ppath, pname):
     module = __import__(modname, fromlist = "dummy")
+    # pluginClasses.append(module)
+    # append class with same name as module
+    pluginClasses.append(getattr(module, modname.split('.')[-1]))
   
   # Look for user-installed plugins
   externalPluginDir = os.path.join(getHome(), "Plugins")
@@ -283,12 +281,12 @@ def getPlugins(package, baseClass, format, exclude0):
       __import__(plugin)
   
   # Get plugin list from subclasses of baseClass
-  pluginClasses = []
-  for m in baseClass.__subclasses__():
-    if exclude0 and m.status == 0:
-      del m
-    else:
-      pluginClasses.append(m)
+  # pluginClasses = []
+  # for m in baseClass.__subclasses__():
+  #   if exclude0 and m.status == 0:
+  #     del m
+  #   else:
+  #     pluginClasses.append(m)
 
   if format == "classes":
     return pluginClasses
@@ -301,21 +299,22 @@ def getPlugins(package, baseClass, format, exclude0):
     assert(0)
 
 def getMethodPlugins(format, exclude0 = True):
-  import openstv.MethodPlugins
-  return getPlugins(openstv.MethodPlugins, MethodPlugin, format, exclude0)
+  import MethodPlugins
+  return getPlugins(MethodPlugins, MethodPlugin, format, exclude0)
   
 def getReportPlugins(format, exclude0 = True):
-  import openstv.ReportPlugins
-  return getPlugins(openstv.ReportPlugins, ReportPlugin, format, exclude0)
+  import ReportPlugins
+  return getPlugins(ReportPlugins, ReportPlugin, format, exclude0)
   
 def getLoaderPlugins(format, exclude0 = True):
-  import openstv.LoaderPlugins
-  return getPlugins(openstv.LoaderPlugins, LoaderPlugin, format, exclude0)
+  import LoaderPlugins
+  return getPlugins(LoaderPlugins, LoaderPlugin, format, exclude0)
 
 def getLoaderPluginClass(extension, exclude0 = True):
   "Return the most appropriate loader for a given file extension."
   plugins = getLoaderPlugins("classes", exclude0)
   for p in plugins:
+    return p
     if extension.lower() in p.extensions:
       return p
   return None # No loader for this extension

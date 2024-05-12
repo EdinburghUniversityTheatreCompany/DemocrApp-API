@@ -30,7 +30,7 @@ class CsvReport(ReportPlugin):
   def __init__(self, e, outputFile=None, test=False):
     ReportPlugin.__init__(self, e, outputFile, test)
     if self.e.methodName == "Condorcet":
-      raise RuntimeError, "CSV report not available for Condorcet elections."
+      raise RuntimeError("CSV report not available for Condorcet elections.")
     
   def generateHeader(self):
 

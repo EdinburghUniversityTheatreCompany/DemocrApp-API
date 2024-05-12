@@ -19,17 +19,17 @@ import sys
 import warnings
 from time import sleep
 from threading import Thread
-from Queue import Queue
+from queue import Queue
 
 import wx
 import wx.html
 import wx.lib.mixins.listctrl as listmix
 
-from openstv.BFE import BFEFrame
-from openstv.ballots import Ballots
-from openstv.ReportPlugins.TextReport import TextReport
-from openstv.ReportPlugins.HtmlReport import HtmlReport
-from openstv.ReportPlugins.CsvReport import CsvReport
+from BFE import BFEFrame
+from ballots import Ballots
+from ReportPlugins.TextReport import TextReport
+from ReportPlugins.HtmlReport import HtmlReport
+from ReportPlugins.CsvReport import CsvReport
 from openstv.plugins import getMethodPlugins
 from openstv.utils import getHome
 
@@ -70,7 +70,7 @@ class Election():
       (os.path.basename(self.filename), self.dirtyBallots.numBallots),
       parent=self.frame, style = wx.PD_APP_MODAL | wx.PD_ELAPSED_TIME
     )
-    while loadThread.isAlive():
+    while loadThread.is_alive():
       sleep(0.1)
       dlg.Pulse("Loading ballots from %s\nNumber of ballots: %d" %
                 (os.path.basename(self.filename), self.dirtyBallots.numBallots))
@@ -99,7 +99,7 @@ class Election():
       "Counting votes using %s\nInitializing..." % self.e.longMethodName,
       parent=self.frame, style = wx.PD_APP_MODAL | wx.PD_ELAPSED_TIME
     )
-    while countThread.isAlive():
+    while countThread.is_alive():
       sleep(0.1)
       if not self.e.breakTieRequestQueue.empty():
         [tiedCandidates, names, what] = self.e.breakTieRequestQueue.get()
@@ -180,7 +180,7 @@ class Frame(wx.Frame):
     # create a console window
     self.console = wx.TextCtrl(self.notebook, -1,
                                style=wx.TE_MULTILINE|wx.TE_READONLY|\
-                               wx.TE_WORDWRAP|wx.FIXED|wx.TE_RICH2)
+                               wx.TE_WORDWRAP|wx.TE_RICH2)
     self.console.SetMaxLength(0)
     ps = self.console.GetFont().GetPointSize()
     font = wx.Font(ps, wx.MODERN, wx.NORMAL, wx.NORMAL)
@@ -263,7 +263,7 @@ to www.OpenSTV.org, or send an email to OpenSTV@googlegroups.com.
     self.AddMenuItem(subMenu, '12', '12', self.OnFontSize)
     self.AddMenuItem(subMenu, '13', '13', self.OnFontSize)
     self.AddMenuItem(subMenu, '14', '14', self.OnFontSize)
-    OptionsMenu.AppendMenu(wx.NewId(), "Font Size", subMenu)
+    # OptionsMenu.AppendMenu(wx.NewId(), "Font Size", subMenu)
 
     self.menuBar.Append(OptionsMenu, '&Options')
     
@@ -279,7 +279,7 @@ to www.OpenSTV.org, or send an email to OpenSTV@googlegroups.com.
     # Help about methods
     # mac wxPython doesn't allow submenus in the help menu so need to do it
     # a different way
-    methods = self.methodClasses2.keys()
+    methods = list(self.methodClasses2.keys())
     methods.sort()
     if wx.Platform == "__WXMAC__":
       HelpMenu.AppendSeparator()
@@ -349,7 +349,7 @@ to www.OpenSTV.org, or send an email to OpenSTV@googlegroups.com.
     # Load ballots from the file.  These are dirty ballots.
     try:
       election.loadBallots()
-    except RuntimeError, msg:
+    except RuntimeError as msg:
       wx.MessageBox(str(msg), "Error", wx.OK|wx.ICON_ERROR)
       return
 
@@ -375,7 +375,7 @@ to www.OpenSTV.org, or send an email to OpenSTV@googlegroups.com.
 
     try:
       election.runElection()
-    except RuntimeError, msg:
+    except RuntimeError as msg:
       wx.MessageBox(str(msg), "Error", wx.OK|wx.ICON_ERROR)
       return
       
@@ -383,7 +383,7 @@ to www.OpenSTV.org, or send an email to OpenSTV@googlegroups.com.
 
     # create a new notebook page
     tc = wx.TextCtrl(self.notebook, -1,
-                     style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL|wx.FIXED)
+                     style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
     tc.SetMaxLength(0)
     ps = tc.GetFont().GetPointSize()
     font = wx.Font(ps, wx.MODERN, wx.NORMAL, wx.NORMAL)
@@ -437,7 +437,7 @@ to www.OpenSTV.org, or send an email to OpenSTV@googlegroups.com.
       return
 
     dlg = wx.FileDialog(self, "Save Results in CSV Format",
-                        style=wx.SAVE|wx.OVERWRITE_PROMPT|wx.CHANGE_DIR)
+                        style=wx.FD_SAVE)
     if dlg.ShowModal() != wx.ID_OK:
       dlg.Destroy()
       return
@@ -457,7 +457,7 @@ to www.OpenSTV.org, or send an email to OpenSTV@googlegroups.com.
       return
 
     dlg = wx.FileDialog(self, "Save Results in Text Format",
-                        style=wx.SAVE|wx.OVERWRITE_PROMPT|wx.CHANGE_DIR)
+                        style=wx.FD_SAVE)
     if dlg.ShowModal() != wx.ID_OK:
       dlg.Destroy()
       return
@@ -481,7 +481,7 @@ to www.OpenSTV.org, or send an email to OpenSTV@googlegroups.com.
       return
 
     dlg = wx.FileDialog(self, "Save Results in HTML Format",
-                        style=wx.SAVE|wx.OVERWRITE_PROMPT|wx.CHANGE_DIR)
+                        style=wx.FD_SAVE)
     if dlg.ShowModal() != wx.ID_OK:
       dlg.Destroy()
       return
@@ -590,7 +590,7 @@ See the Help menu for more information about the available methods.""")
     self.Bind(wx.EVT_BUTTON, self.OnFilenameSelect, filenameB)
 
     methodL = wx.StaticText(self, -1, "Method:")
-    choices = parent.methodClasses.keys()
+    choices = list(parent.methodClasses.keys())
     choices.sort()
     self.methodC = wx.Choice(self, -1, choices = choices)
     if parent.lastMethod in choices:
@@ -646,7 +646,7 @@ See the Help menu for more information about the available methods.""")
 
   def OnFilenameSelect(self, event):
     dlg = wx.FileDialog(self, "Select Input File", "",
-                        style=wx.OPEN|wx.CHANGE_DIR)
+                        style=wx.FD_OPEN)
     if dlg.ShowModal() != wx.ID_OK:
       dlg.Destroy()
       return
@@ -895,9 +895,9 @@ class App(wx.App):
     # Show a splash screen
     png = os.path.join(getHome(), "Icons", "splash.png")
     bmp = wx.Image(png).ConvertToBitmap()
-    wx.SplashScreen(bmp,
-                    wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT,
-                    5000, None, -1)
+    # wx.SplashScreen(bmp,
+    #                 wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT,
+    #                 5000, None, -1)
 
     self.frame = Frame(None)
     self.frame.Show(True)

@@ -77,12 +77,12 @@ number generator for breaking ties.</p>
       # 10000 per David Hill; clause 42 has 1000
       self.z = (v+10000*(v % 10)) % 30323
       # prime PRNG per clause 44
-      self.next()
-      self.next()
-      self.next()
-      self.next()
+      next(self)
+      next(self)
+      next(self)
+      next(self)
 
-    def next(self):
+    def __next__(self):
       "generate next random number per clause 43"
       self.x = (171*self.x) % 30269
       self.y = (172*self.y) % 30307
@@ -102,9 +102,9 @@ number generator for breaking ties.</p>
     # initialize PRNG per clause 42
     prng = MeekNZSTV.NZprng(c=self.b.numCandidates, n=self.numSeats, v=self.b.numBallots)
     for c in self.continuing:
-      rc = prng.next()
-      while rc in self.prng_cands.values():
-        rc = prng.next()
+      rc = next(prng)
+      while rc in list(self.prng_cands.values()):
+        rc = next(prng)
       self.prng_cands[c] = rc
 
   #  NOTE
@@ -120,7 +120,7 @@ number generator for breaking ties.</p>
       remainder = self.p
 
     # Iterate over the next candidates on the ballots
-    for c in tree.keys():
+    for c in list(tree.keys()):
       if c == "n" or c == "bi":
         continue
       rrr = remainder
@@ -237,12 +237,12 @@ number generator for breaking ties.</p>
 
     # Sort all the candidates by PRN and then return the first tied candidate from the resulting list
     # Note that round number R starts at 1, and we reverse on even rounds
-    for c in sorted(self.prng_cands.keys(), key=lambda k: self.prng_cands[k], reverse=(self.R & 1)==0):
+    for c in sorted(list(self.prng_cands.keys()), key=lambda k: self.prng_cands[k], reverse=(self.R & 1)==0):
       if c in tiedC:
         desc = "Candidate %s was chosen by breaking the tie randomly. " % \
               self.b.names[c]
         return (c, desc)
-    raise RuntimeError, "Internal error breaking strong tie."
+    raise RuntimeError("Internal error breaking strong tie.")
 
   #  Differs from MeekSTV in that it rounds up the intermediate
   #  keep factor calculation.
@@ -288,16 +288,16 @@ number generator for breaking ties.</p>
     "Update message for this round"
     if self.roundInfo[self.R]["action"][0] == "first":
       text = "Count of first choices. "
-    elif self.roundInfo[self.R].has_key("surplus") and \
-         self.roundInfo[self.R].has_key("eliminate"):
+    elif "surplus" in self.roundInfo[self.R] and \
+         "eliminate" in self.roundInfo[self.R]:
       text = self.roundInfo[self.R]["eliminate"] + \
            self.roundInfo[self.R]["surplus"]
-    elif self.roundInfo[self.R].has_key("surplus"):
+    elif "surplus" in self.roundInfo[self.R]:
       text = self.roundInfo[self.R]["surplus"]
-    elif self.roundInfo[self.R].has_key("eliminate"):
+    elif "eliminate" in self.roundInfo[self.R]:
       text = self.roundInfo[self.R]["eliminate"]
 
-    if self.roundInfo[self.R].has_key("winners"):
+    if "winners" in self.roundInfo[self.R]:
       text += self.roundInfo[self.R]["winners"]
 
     self.msg[self.R] = text

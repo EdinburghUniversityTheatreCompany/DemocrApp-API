@@ -59,7 +59,7 @@ class DCBallotLoader(LoaderPlugin):
       self.fName = self.normalizeFileName(fName)
     f = open(self.fName, "w")
     
-    for i in xrange(ballotList.numBallots):
+    for i in range(ballotList.numBallots):
       ballot = ballotList.getBallot(i)
       line = ",".join(ballot)
       f.write(line + "\n")

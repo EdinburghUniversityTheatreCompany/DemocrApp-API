@@ -30,7 +30,7 @@ class HtmlReport(ReportPlugin):
   def __init__(self, e, outputFile=None, test=False):
     ReportPlugin.__init__(self, e, outputFile, test)
     if self.e.methodName == "Condorcet":
-      raise RuntimeError, "HTML report not available for Condorcet elections."
+      raise RuntimeError("HTML report not available for Condorcet elections.")
 
   def printTableRow(self, values):
     """Print a single table line"""

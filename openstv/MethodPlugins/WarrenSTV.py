@@ -49,7 +49,7 @@ in a different way.</p>
       remainder = self.p
     
     # Iterate over the next candidates on the ballots
-    for c in tree.keys():
+    for c in list(tree.keys()):
       if c == "n" or c == "bi": 
         continue
       rrr = remainder

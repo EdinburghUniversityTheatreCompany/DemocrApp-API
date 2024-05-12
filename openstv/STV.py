@@ -149,20 +149,20 @@ class ElectionMethod(object):
     if self.prec == 0: 
       return str(value)
     nfmt = "%d.%0" + str(self.prec) + "d" # %d.%0_d
-    return nfmt % (value//self.p, value%self.p)
+    return nfmt % (value/self.p, value%self.p)
 
   def checkMinRequirements(self):
     "Only attempt to count votes if there are enough candidates and voters."
     
     # some basic minimum requirements
     if self.b.numCandidates < 2:
-      raise RuntimeError( """\
+      raise RuntimeError("""\
 Not enough candidates to run an election.
 Need at least %d candidates but have only %d.""" % (
         max(2, self.numSeats+1), self.b.numCandidates))
 
     if self.numSeats < 1:
-      raise RuntimeError( "The number of seats must be at least 1.")
+      raise RuntimeError("The number of seats must be at least 1.")
 
   def findTiedCand(self, candidateList, mostfewest, values):
     """Return a list of candidates tied for first or last.
@@ -459,7 +459,7 @@ class Iterative(ElectionMethod):
   def newLosers(self, newLosersList):
     "Perform basic accounting when a new loser is found."
     
-    assert(len(newLosersList) > 0)
+    assert(newLosersList)
     for c in newLosersList:
       self.continuing.remove(c)
       self.losers.add(c)
@@ -580,7 +580,7 @@ class STV(Iterative):
       threshNum = self.p * self.b.numBallots - self.exhausted[self.R]
 
     if self.threshName[2] == "Whole":
-      thresh = (threshNum/threshDen)//self.p*self.p + self.p
+      thresh = threshNum/threshDen/self.p*self.p + self.p
     elif self.threshName[2] == "Fractional":
       thresh = threshNum/threshDen + 1
 
@@ -811,8 +811,7 @@ class STV(Iterative):
 
     if len(self.winners) == self.numSeats:
       # All others are losers
-      if len(self.continuing) > 0:
-        self.newLosers(list(self.continuing))
+      self.newLosers(list(self.continuing))
 
     else:
       # Candidates with no votes are losers
@@ -877,7 +876,7 @@ class OrderDependentSTV(STV):
     "Count the first place votes with order dependent rules."
 
     # Allocate votes to candidates bases on the first choices.
-    for i in xrange(self.b.numBallots):
+    for i in range(self.b.numBallots):
       c = self.b.getTopChoiceFromBallot(i, self.continuing)
       if c is not None: 
         self.votes[c].append(i)
@@ -1312,7 +1311,7 @@ class RecursiveSTV(OrderIndependentSTV):
     for c in range(self.b.numCandidates):
       self.keepFactor[0][c] = self.p
 
-    for i in xrange(self.b.numWeightedBallots):
+    for i in range(self.b.numWeightedBallots):
       self.addBallotToTree(self.tree, i)
 
   def addBallotToTree(self, tree, ballotIndex, ballot=""):

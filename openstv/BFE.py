@@ -19,9 +19,9 @@ import os
 import warnings
 import wx.lib.mixins.listctrl as listmix
 
-from openstv.STV import *
-from openstv.ballots import Ballots
-from openstv.utils import getHome
+from STV import *
+from ballots import Ballots
+from utils import getHome
 
 ##################################################################
 
@@ -70,7 +70,7 @@ class BFEFrame(wx.Frame):
       try:
         self.b = Ballots()
         self.b.loadUnknown(fName)
-      except RuntimeError, msg:
+      except RuntimeError as msg:
         wx.MessageBox(str(msg), "Error", wx.OK|wx.ICON_ERROR)
         self.Destroy()
         return
@@ -170,7 +170,7 @@ class BFEFrame(wx.Frame):
       oldNumBallots = self.b.numBallots
       self.b.appendFile(fName)
       self.b = self.b.getCleanBallots(removeEmpty=False, removeWithdrawn=False)
-    except RuntimeError, msg:
+    except RuntimeError as msg:
       wx.MessageBox(str(msg), "Error", wx.OK|wx.ICON_ERROR)
     else:
       self.Log("Appended %d ballots from file %s." %\
@@ -188,7 +188,7 @@ class BFEFrame(wx.Frame):
 
     try:
       self.b.save()
-    except RuntimeError, msg:
+    except RuntimeError as msg:
       wx.MessageBox(str(msg), "Error", wx.OK|wx.ICON_ERROR)
       return
     self.panel.NeedToSaveBallots = False
@@ -207,7 +207,7 @@ class BFEFrame(wx.Frame):
     # Save
     try:
       self.b.saveAs(fName)
-    except RuntimeError, msg:
+    except RuntimeError as msg:
       wx.MessageBox(str(msg), "Error", wx.OK|wx.ICON_ERROR)
       return
     self.panel.NeedToSaveBallots = False
@@ -225,7 +225,7 @@ class BFEFrame(wx.Frame):
 
     try:
       self.log.SaveFile(self.logfName)
-    except RuntimeError, msg:
+    except RuntimeError as msg:
       wx.MessageBox(str(msg), "Error", wx.OK|wx.ICON_ERROR)
       return
 
@@ -242,7 +242,7 @@ class BFEFrame(wx.Frame):
 
     try:
       self.log.SaveFile(self.logfName)
-    except RuntimeError, msg:
+    except RuntimeError as msg:
       wx.MessageBox(str(msg), "Error", wx.OK|wx.ICON_ERROR)
       return
 
@@ -357,7 +357,7 @@ class BallotsPanel(wx.Panel):
     numCandidatesC = wx.StaticText(self, -1, "%d" % self.b.numCandidates)
     titleL = wx.StaticText(self, -1, "Title:")
     title = ""
-    if vars(self.b).has_key("title"): 
+    if "title" in vars(self.b): 
       title = self.b.title
     titleC = wx.TextCtrl(self, -1, title)
     self.Bind(wx.EVT_TEXT, self.OnTitle, titleC)
@@ -529,7 +529,7 @@ remove the ranking and reorder the remaining candidates."""
                           if r != -1 and not isinstance(r, list)]
     
     # Update the list box to show the current ballot
-    for c in xrange(self.b.numCandidates):
+    for c in range(self.b.numCandidates):
       if self.currentBallot.count(c) > 1:
         warnings.warn("Candidate %s appears on ballot %d more than once.  Later rankings ignored." % (self.b.names[c], self.i+1))
       if c in self.currentBallot:

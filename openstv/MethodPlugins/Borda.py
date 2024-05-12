@@ -70,7 +70,7 @@ his or her first choice candidate.</p>
     "Count the votes using the Borda Count."
 
     # Add up the Borda counts
-    for i in xrange(self.b.numWeightedBallots):
+    for i in range(self.b.numWeightedBallots):
       weight, blt = self.b.getWeightedBallot(i)
       # Ranked candidates get their usual Borda score
       for j, c in enumerate(blt):
