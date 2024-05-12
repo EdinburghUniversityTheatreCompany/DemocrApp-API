@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ['127.0.0.1', '192.168.0.56', 'democrapp.bedlamtheatre.co.uk', '
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'Meeting.apps.MeetingConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -50,7 +51,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'channels.middleware.WebSocketMiddleware',
 ]
 if DEBUG:
     MIDDLEWARE.append('democrapp_api.middleware.DevProxyMiddleware')
@@ -102,6 +102,8 @@ DATABASES = {
     }
 }
 
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
 
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
@@ -130,8 +132,6 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
-
-USE_L10N = True
 
 USE_TZ = True
 

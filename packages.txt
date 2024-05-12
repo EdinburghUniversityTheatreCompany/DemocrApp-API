@@ -1,0 +1,10 @@
+asgiref
+channels
+channels-redis
+daphne
+Django==5.0.4
+mysqlclient
+pytest
+pytest-asyncio
+pytest-django
+uWSGI

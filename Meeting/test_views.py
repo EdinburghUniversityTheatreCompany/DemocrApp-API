@@ -255,13 +255,13 @@ class ManagementInterfaceCases(BaseTestCase):
     def test_meeting_management(self):
         request_args = [reverse('meeting/manage', args=[self.m.pk])]
         result = self.client.get(*request_args)
-        self.assertEquals(200, result.status_code)
+        self.assertEqual(200, result.status_code)
         for type in list(map(lambda x: x[0], Vote.methods)):
             for state in list(map(lambda x: x[0], Vote.states)):
                 Vote(token_set=self.ts, method=type, state=state).save()
                 request_args = [reverse('meeting/manage', args=[self.m.pk])]
                 result = self.client.get(*request_args)
-                self.assertEquals(200, result.status_code)
+                self.assertEqual(200, result.status_code)
 
     def test_create_token(self):
         for proxy in [True, False]:
@@ -283,7 +283,7 @@ class ManagementInterfaceCases(BaseTestCase):
         self.assertRedirects(out, reverse('meeting/report/meeting', args=[self.m.pk]))
         v1.refresh_from_db()
         self.assertFalse(Vote.objects.filter(pk=v2.pk).exists())
-        self.assertEquals(v1.state, Vote.CLOSED)
+        self.assertEqual(v1.state, Vote.CLOSED)
         self.m.refresh_from_db()
         self.assertGreater(self.m.close_time, before)
         self.assertLess(self.m.close_time, after)
