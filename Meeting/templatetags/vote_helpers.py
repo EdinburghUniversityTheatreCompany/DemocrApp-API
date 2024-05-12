@@ -36,7 +36,7 @@ def vote_responses_or_remove(vote, token):
         return format_html("""<form action='{}' method='POST'>
         <input type='hidden' name='csrfmiddlewaretoken' value='{}' />
         <input type='hidden' name='_method' value='DELETE'>
-        <input class='btn btn-sm btn-danger' type='submit' value='delete'>
+        <input class='btn btn-sm btn-danger' type='submit' value='Delete'>
         </form>""",
             reverse('meeting/manage_vote', args=[vote.token_set.meeting_id, vote.id]),
             token)

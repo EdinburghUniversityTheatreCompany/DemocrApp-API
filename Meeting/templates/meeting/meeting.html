@@ -29,7 +29,7 @@
 </div>
 
 <div class="card">
-  <h5 class="card-header">Create new ballot</h5>
+  <h5 class="card-header">Create New Ballot</h5>
   <div class="card-body">
     <form action="{% url 'meeting/new_vote' meeting.id %}" method="post">
       {% csrf_token %}
@@ -58,7 +58,7 @@
             {{ form.description.errors }}
             <textarea class="form-control col" name="{{ form.description.html_name }}" row="3" maxlength="150" required id="{{ form.description.id_for_label }}"></textarea>
           </div>
-          <input type="submit" value="Submit" class="btn btn-primary m-1 align-right" />
+          <input type="submit" value="Submit" class="btn btn-sm btn-primary m-1 align-right" />
         </div>
       </div>
     </form>
@@ -68,7 +68,7 @@
 <div class="row">
   <div class="col-md-6">
     <div class="card">
-        <h5 class="card-header">Create voter token</h5>
+        <h5 class="card-header">Create Voter Token</h5>
         <div class="card-body">
           <form>
             {% csrf_token %}
@@ -81,10 +81,12 @@
   </div>
   <div class="col-md-6">
     <div class="card">
-      <h5 class="card-header">Send announcement</h5>
+      <h5 class="card-header">Send Announcement</h5>
       <div class="card-body">
-        <input type="text" id="message_textbox">
-        <button type="button" class="btn btn-sm btn-primary" id="announcement_submit" onclick="send_announcement()">announce</button>
+        <div class="form-group mb-1">
+          <textarea class="form-control" id="message_textbox" row="1" required></textarea>
+        </div>
+        <button type="button" class="btn btn-sm btn-primary" id="announcement_submit" onclick="send_announcement()">Announce</button>
       </div>
     </div>
   </div>
@@ -97,8 +99,16 @@
         <div class="card-body">
           <form id="token_invalidation_form">
             {% csrf_token %}
-              <input type="number" id="invalidate_token_textbox" min="10000000" max="99999999">
-              <input type="button" class="btn btn-sm btn-primary" onclick="invalidate_token()" value="invalidate token" />
+            <div class="row">
+              <div class="col">
+                <div class="form-group mb-1">
+                  <input type="number" class="form-control" id="invalidate_token_textbox" min="10000000" max="99999999"></input>
+                </div>
+              </div>
+              <div class="col-auto">
+                <input type="submit" class="btn btn-sm btn-danger p-1 m-1" onclick="invalidate_token()" value="Invalidate Token"></input>
+              </div>
+            </div>
           </form>
         </div>
       </div>
@@ -231,7 +241,7 @@
     };
 
     function close_meeting(e){
-        if(confirm("Are you sure? this will close all open votes and delete unopened ones")){
+        if(confirm("Are you sure? This will close all open votes and delete unopened ones")){
             return true;
         } else {
             e.preventDefault();
