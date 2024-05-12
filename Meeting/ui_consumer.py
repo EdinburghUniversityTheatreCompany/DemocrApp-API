@@ -1,5 +1,5 @@
 from uuid import UUID
-
+from django.conf import settings
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
 from .models import *
@@ -64,9 +64,16 @@ class UIConsumer(JsonWebsocketConsumer):
             else:
                 raise RuntimeError
         except Exception as e:
-            self.send_json({"type": "auth_response",
-                            "result": "failure",
-                            "reason": "Bad Auth Token"})
+            response = {
+                "type": "auth_response",
+                "result": "failure",
+                "reason": "Bad Auth Token"
+            }
+
+            if settings.DEBUG:
+                response['exception'] = str(e)
+
+            self.send_json(response)
 
     def process_votes(self, message):
         vote_num = message['ballot_id']
