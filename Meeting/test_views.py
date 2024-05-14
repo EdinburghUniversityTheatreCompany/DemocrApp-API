@@ -263,16 +263,38 @@ class ManagementInterfaceCases(BaseTestCase):
                 result = self.client.get(*request_args)
                 self.assertEqual(200, result.status_code)
 
-    def test_create_token(self):
+    def test_create_one_token(self):
         for proxy in [True, False]:
             request_args = [reverse('meeting/create_token', args=[self.m.pk]),
-                            {'proxy': proxy.__str__().lower()}]
+                            {'proxy': proxy.__str__().lower(), 'amount': '1'}]
             result = json.loads(self.client.post(*request_args).content)
-            self.assertDictContainsSubset({"result": "success", "meeting_id": self.m.pk, "meeting_name": self.m.name, "proxy": proxy}, result)
+
+            expected_dict = { "result": "success", "meeting_id": self.m.pk, "meeting_name": self.m.name, "proxy": proxy }
+
+            self.assertEqual(result, expected_dict | result)
+
             token = AuthToken.objects.filter(pk=result['token']).first()
             self.assertEqual(self.ts, token.token_set)
             self.assertEqual(proxy, token.has_proxy)
             assert token.active
+
+    def test_create_multiple_tokens(self):
+        for proxy in [True, False]:
+            request_args = [reverse('meeting/create_token', args=[self.m.pk]),
+                            {'proxy': proxy.__str__().lower(), 'amount': '5'}]
+            result = json.loads(self.client.post(*request_args).content)
+
+            expected_dict = { "result": "success", "meeting_id": self.m.pk, "meeting_name": self.m.name, "proxy": proxy }
+
+            self.assertEqual(result, expected_dict | result)
+
+            tokens = AuthToken.objects.filter(pk__in=result['tokens'])
+            self.assertEqual(5, tokens.count())
+
+            for token in tokens:
+                self.assertEqual(self.ts, token.token_set)
+                self.assertEqual(proxy, token.has_proxy)
+                assert token.active
 
     def test_close_meeting(self):
         v1 = self.ts.vote_set.create(method=Vote.YES_NO_ABS, state=Vote.LIVE)

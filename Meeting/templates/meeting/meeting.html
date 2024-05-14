@@ -72,9 +72,19 @@
         <div class="card-body">
           <form>
             {% csrf_token %}
+            <div class="row">
+              <div class="col">
             <label for="proxy">voter has proxy?</label>
-            <input type="checkbox" name="proxy"/>
-            <input type="button" class="btn btn-sm btn-primary" onclick="create_token()" value="create token" />
+                <input type="checkbox" class="form-control" name="proxy"/>
+              </div>
+              <div class="col">
+                <label for="tokenAmount">Amount of tokens</label>
+                <input type="number" class="form-control" name="tokenAmount" min="1" max="100" value="1"/>
+              </div>
+              <div class="col-auto">
+                <input type="button" class="btn btn-sm btn-primary" onclick="create_token()" value="Create Token" />
+              </div>
+            </div>
           </form>
         </div>
       </div>
@@ -176,7 +186,8 @@
         url: '{% url 'meeting/create_token' meeting.id %}',
         data: {
           'type': 'create_token',
-          'proxy': $('[name=proxy]').prop('checked')
+          'proxy': $('[name=proxy]').prop('checked'),
+          'amount': ('[name=tokenAmount]').prop('value'),
         },
         dataType: 'json',
         success: function (data) {

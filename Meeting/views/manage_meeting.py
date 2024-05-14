@@ -48,13 +48,47 @@ def close_meeting(request, meeting_id):
 
 @login_required(login_url='/api/admin/login')
 @permission_required('Meeting.add_meeting')
-def create_token(request, meeting_id):
+def create_token(request, meeting_id, amount):
     if request.method == "POST":
         meeting = get_object_or_404(Meeting, pk=meeting_id)
-        proxy = (request.POST['proxy'] == 'true')
-        at = AuthToken(token_set=meeting.tokenset_set.latest(), has_proxy=proxy)
-        at.save()
-        return JsonResponse({"result": "success", "meeting_id": meeting_id, "meeting_name": meeting.name, "token": at.id, "proxy": proxy, "print_url": "/print.html?" + urllib.parse.urlencode({'t': at.id, 'h': meeting.name, 'p': proxy, 'm': meeting_id}, quote_via=urllib.parse.quote)})
+        proxy = request.POST['proxy'] == 'true'
+        amount = int(request.POST['amount'])
+
+        response = {
+            "result": "success",
+            "meeting_id": meeting_id,
+            "meeting_name": meeting.name,
+            "proxy": proxy, 
+        }
+
+        # If we just want one code, generate them receipt style.
+        if amount == 1:
+            authToken = AuthToken(token_set=meeting.tokenset_set.latest(), has_proxy=proxy)
+            authToken.save()
+
+            response["token"] = authToken.id
+            response["print_url"] = "/print.html?" + urllib.parse.urlencode(
+                {'t': authToken.id, 'h': meeting.name, 'p': proxy, 'm': meeting_id}, 
+                quote_via=urllib.parse.quote
+            )
+    
+            return JsonResponse(response)
+        
+        # Otherwise, generate a full page.
+        else:
+            authTokenIds = []
+            for i in range(amount):
+                authToken = AuthToken(token_set=meeting.tokenset_set.latest(), has_proxy=proxy)
+                authToken.save()
+                authTokenIds.append(authToken.id)
+
+            response['tokens'] = authTokenIds
+            response["print_url"] = "/bulk_tokens.html?" + urllib.parse.urlencode(
+                { 't': authTokenIds, 'h': meeting.name, 'p': proxy }, 
+                quote_via=urllib.parse.quote
+            )
+            return JsonResponse(response)
+            
     return JsonResponse({"result": "failure", "reason": "this endpoint requires POST as it changes state"})
 
 
