@@ -26,7 +26,7 @@ SECRET_KEY = '82*8z&b6iz1yj+)!-c+%0zc(=&)&3=grvzo0o-&&jw@3t3a9hg'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', '192.168.0.56', 'democrapp.bedlamtheatre.co.uk', '0.0.0.0', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', '192.168.0.56', 'democrapp.bedlamtheatre.co.uk', 'democrappbackup.bedlamtheatre.co.uk', '0.0.0.0', 'localhost', 'django-asgi']
 
 
 # Application definition
