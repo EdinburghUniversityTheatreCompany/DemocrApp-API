@@ -134,7 +134,7 @@ class UIConsumer(JsonWebsocketConsumer):
             "method": vote.method,
             "options": options,
             "proxies": True,
-            "existing_ballots": BallotEntry.objects.filter(option__vote=vote, token_id__in=self.voter_tokens).exists(),
+            "existing_ballots": list(BallotEntry.objects.filter(option__vote=vote, token_id__in=self.voter_tokens).values("option__vote", "token_id")),
         }
         self.send_json(message)
 
