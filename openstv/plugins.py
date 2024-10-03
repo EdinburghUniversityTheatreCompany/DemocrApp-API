@@ -188,9 +188,11 @@ class ReportPlugin(object):
       self.dirtyB = self.cleanB
     self.outputFile = outputFile
     self.test = test
+    self.ouputText = None
 
   def output(self, output):
     """Stream output to destination file-like object."""
+    self.outputText = output
     print(output, end=' ', file=self.outputFile)
     
   def generateReport(self):
