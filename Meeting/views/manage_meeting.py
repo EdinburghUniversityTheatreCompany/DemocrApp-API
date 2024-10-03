@@ -48,7 +48,7 @@ def close_meeting(request, meeting_id):
 
 @login_required(login_url='/api/admin/login')
 @permission_required('Meeting.add_meeting')
-def create_token(request, meeting_id, amount):
+def create_token(request, meeting_id):
     if request.method == "POST":
         meeting = get_object_or_404(Meeting, pk=meeting_id)
         proxy = request.POST['proxy'] == 'true'
