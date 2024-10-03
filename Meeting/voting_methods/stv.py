@@ -54,7 +54,7 @@ class STV(VoteMethod):
         electionCounter.breakTieResponseQueue = Queue(1)
         countThread = Thread(target=electionCounter.runElection)
         countThread.start()
-        while countThread.isAlive():
+        while countThread.is_alive():
             sleep(0.1)
             if not electionCounter.breakTieRequestQueue.empty():
                 [tiedCandidates, names, what] = electionCounter.breakTieRequestQueue.get()
@@ -77,12 +77,13 @@ class STV(VoteMethod):
         for l in electionCounter.losers:
             losers.append(ballots.names[l])
         vote.results = "Winners: {} \nLosers:{}".format(winners, losers)
-        r = YamlReport(electionCounter, outputToString=True)
+        r = YamlReport(electionCounter)
         r.generateReport()
         report = "\n"
         for index, name in enumerate(ballots.names):
             report += "[{}] -> {}\n".format(index, name)
-        report += r.outputFile
+
+        report += r.outputText
         vote.results += report
         vote.save()
 
