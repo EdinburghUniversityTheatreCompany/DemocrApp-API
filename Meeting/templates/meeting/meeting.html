@@ -74,8 +74,10 @@
             {% csrf_token %}
             <div class="row">
               <div class="col">
-            <label for="proxy">voter has proxy?</label>
-                <input type="checkbox" class="form-control" name="proxy"/>
+                <div class="form-check form-check-inline">
+                  <label class="form-check-label" for="proxy">voter has proxy?</label>
+                  <input class="form-check-input" type="checkbox" id="proxy" name="proxy"/>
+                </div>
               </div>
               <div class="col">
                 <label for="tokenAmount">Amount of tokens</label>
@@ -187,14 +189,16 @@
         data: {
           'type': 'create_token',
           'proxy': $('[name=proxy]').prop('checked'),
-          'amount': ('[name=tokenAmount]').prop('value'),
+          'amount': $('[name=tokenAmount]').prop('value'),
         },
         dataType: 'json',
         success: function (data) {
           if (data.result == "success") {
             console.log("Created token.");
             console.log(data);
-            window.open(data.print_url);
+
+            // All receipts open as a new tab in the same window.
+            window.open(data.print_url, 'receipt_window');
             return;
           }
           else {
