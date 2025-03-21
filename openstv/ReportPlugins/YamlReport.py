@@ -61,6 +61,8 @@ class YamlReport(ReportPlugin):
 
     self.generateHeader()
 
+    outputString = ""
+
     for r in range(self.e.numRounds):
       roundStage = r
       if self.e.methodName == "ERS97 STV":
@@ -93,4 +95,7 @@ class YamlReport(ReportPlugin):
   Lost:  %s
   Xfer:  %s
 """ % (index, tally, won, lost, xfer)
-      self.output(roundLine)
+
+      outputString += roundLine
+    
+    self.output(outputString)
